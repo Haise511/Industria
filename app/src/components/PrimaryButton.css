@@ -1,0 +1,36 @@
+.pbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 96px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  transition: transform 0.12s ease, opacity 0.18s ease;
+  user-select: none;
+}
+.pbtn:active {
+  transform: scale(0.98);
+  opacity: 0.92;
+}
+.pbtn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.pbtn--primary {
+  background: var(--brand);
+  color: #fff;
+}
+
+.pbtn--ghost {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+.pbtn--full {
+  width: 100%;
+}

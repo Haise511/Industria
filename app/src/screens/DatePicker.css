@@ -1,0 +1,99 @@
+.dp {
+  padding-bottom: 0;
+}
+
+.dp-top {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.dp-pad {
+  padding: 0 16px;
+}
+
+.dp-title {
+  margin-bottom: 24px;
+}
+
+.dp-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dp-month-label {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dp-month-next {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--text-muted);
+}
+
+.dp-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.dp-week-day {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-quiet);
+}
+
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dp-cell {
+  height: 40px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dp-cell:disabled,
+.dp-cell--mute {
+  color: #555;
+  pointer-events: none;
+}
+
+.dp-cell.is-selected {
+  background: var(--brand);
+  color: #fff;
+}
+
+.dp-cell:not(.is-selected):not(:disabled):active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dp-comment {
+  margin-top: 24px;
+}
+
+.dp-comment .field-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.dp-cta {
+  margin-top: auto;
+  padding: 16px;
+}

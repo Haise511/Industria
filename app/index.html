@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#1d1d1d" />
+    <title>Индустрия</title>
+
+    <!-- Telegram Web App SDK (must be loaded before the React bundle) -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!--
+      Fixel Display — self-hosted from /public/fonts (declared in
+      src/styles/fonts.css). Preload the weights that hit the first paint
+      (Regular 400 / Medium 500 / SemiBold 600 / Bold 700) so headings and
+      buttons render with the correct face on initial render.
+    -->
+    <link rel="preload" href="/fonts/FixelDisplay-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/FixelDisplay-Medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/FixelDisplay-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/FixelDisplay-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+.list {
+  padding-bottom: 0;
+}
+
+/*
+ * Figma node 1:8898 "Frame 2147226171" (Заявки/Отклики/Заказы list root).
+ *   - Content frame paddingTop: 20  (verified)
+ *   - Content frame paddingBottom: 12  (gap between title and first card)
+ *   - Cards container item-spacing: 12  (verified on 1:8902)
+ *
+ * Use flex column on the wrapper with gap=12 so the spacing rules survive
+ * margin-collapse and selector-ordering edge cases.
+ */
+.list-pad {
+  padding: 20px 16px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-title {
+  margin: 0;
+}
+
+.list-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

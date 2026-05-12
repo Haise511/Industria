@@ -1,0 +1,77 @@
+.create {
+  padding-bottom: 0;
+}
+
+.create-pad {
+  padding: 0 16px;
+}
+
+.create-title {
+  margin-bottom: 24px;
+}
+
+.create-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.create-textarea .field-textarea {
+  min-height: 60px;
+}
+
+.create-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--surface-1);
+  border-radius: 16px;
+  font-size: 16px;
+  color: var(--text);
+}
+.create-select .muted {
+  color: var(--text-quiet);
+}
+
+.create-modes {
+  display: flex;
+  gap: 8px;
+  background: var(--surface-1);
+  border-radius: 999px;
+  padding: 4px;
+  align-self: flex-start;
+}
+
+.create-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.create-mode.is-active {
+  background: var(--surface-segment);
+}
+
+.create-mode-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #6b6fe8, #4f62ec);
+  display: inline-block;
+}
+.create-mode-dot--alt {
+  background: linear-gradient(135deg, #ff5e6c, #e0322f);
+}
+
+.create-cta {
+  margin-top: auto;
+  padding: 16px;
+}

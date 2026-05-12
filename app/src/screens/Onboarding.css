@@ -1,0 +1,256 @@
+/*
+ * Onboarding — pixel-mapped to Figma nodes 1:5744 / 14:3282 / 1:5900.
+ * Notable Figma constants applied here:
+ *   - progress bar: 358 x 6, brand-soft fill
+ *   - heading: Fixel 700/28/lh=28
+ *   - subtitle: Fixel 500/16/lh=22
+ *   - row card: padding 16/24/16/24, item-spacing 10
+ *   - row title: 600/16/lh=22, row desc: 400/14/lh=19
+ *   - gap between heading block and list: 40px
+ *   - gap between rows: 16px
+ */
+
+.onb-progress {
+  height: 6px;
+  background: var(--divider);
+  border-radius: 999px;
+  margin: 0 16px 12px;
+  overflow: hidden;
+}
+
+.onb-progress-fill {
+  height: 100%;
+  background: var(--brand-soft);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.onb-pad {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.onb-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Figma: subtitle is white #ffffff @ opacity 0.6, 500/16/lh=22.08 — verified
+   from text node 1:5770 in Figma file (fills.color={1,1,1,1}, opacity=0.6). */
+.onb-sub {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 500;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.onb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.onb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: var(--surface-1);
+  border-radius: 16px;
+  text-align: left;
+  color: var(--text);
+  width: 100%;
+}
+
+.onb-row--col {
+  align-items: center;
+  gap: 12px;
+}
+
+.onb-row-label {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.onb-flag {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.onb-flag svg { display: block; }
+
+.onb-emoji {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* Figma: 40x40 illustration container, no rounding (the PNG fills the
+   entire box and already includes its own visual boundary). */
+.onb-role-illu {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.onb-role-illu img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.onb-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.onb-row-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--text);
+}
+/* Figma: role description is white (400/14/lh=19), not muted. */
+.onb-row-desc {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19px;
+  color: var(--text);
+}
+
+.onb-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 32px;
+  position: relative;
+}
+
+.onb-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4d4d4d, #333);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.onb-avatar-btn {
+  position: absolute;
+  bottom: -8px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 999px;
+}
+
+.onb-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.onb-stack .field-label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-quiet);
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.onb-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  background: var(--surface-1);
+  border-radius: 16px;
+  font-size: 16px;
+  color: var(--text);
+}
+.onb-check-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--text-quiet);
+  flex-shrink: 0;
+}
+
+.onb-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-quiet);
+  padding: 10px 4px 0;
+}
+
+.onb-cta {
+  margin-top: auto;
+  padding: 16px 0 24px;
+}
+
+/* Splash — Figma node 1:5957 "Загрузка". Background is a solid #1d1d1d
+   per the canvas fill on that frame; the logo is the rasterised "Индустрия
+   Лого00" image fill (node 1:5983, 96x59 in Figma). H1 underneath is
+   28/700/lh=28 white, mirroring node 1:5985. */
+.onb-splash {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  min-height: 100dvh;
+}
+
+.onb-splash-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+  color: #fff;
+}
+
+.onb-splash-logo {
+  width: 96px;
+  height: auto;
+  display: block;
+}
+
+.onb-splash-title {
+  font-size: 28px;
+  line-height: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}

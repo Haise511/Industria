@@ -1,0 +1,61 @@
+.notif-pad {
+  padding: 0 16px;
+}
+
+.notif-title {
+  margin: 4px 0 24px;
+}
+
+.notif-group {
+  margin-bottom: 16px;
+}
+
+.notif-section {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+  padding-left: 4px;
+}
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface-1);
+  border-radius: 16px;
+}
+
+.notif-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  flex-shrink: 0;
+}
+
+.notif-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notif-h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.notif-body {
+  font-size: 14px;
+  margin: 0;
+  line-height: 18px;
+}

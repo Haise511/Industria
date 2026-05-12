@@ -1,0 +1,17 @@
+.vrf-pad {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vrf-text {
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+}
+
+.vrf-cta {
+  margin-top: auto;
+  padding: 16px;
+}

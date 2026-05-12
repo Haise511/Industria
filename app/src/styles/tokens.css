@@ -1,0 +1,82 @@
+/*
+ * «Индустрия» — design tokens
+ *
+ * Source of truth for colors, typography, spacing, radii.
+ * Extracted 1:1 from Figma file 8R0Uvtglbzq82ZA2TVQdSU.
+ *
+ * NOTE: brand colors are FIXED — the design does not follow Telegram theme
+ * variables (--tg-theme-*). The app stays dark across all Telegram clients.
+ */
+
+:root {
+  /* Surfaces */
+  --bg: #1d1d1d;
+  --surface-1: #272727; /* primary card */
+  --surface-2: #242424; /* profile card */
+  --surface-3: #2d2d2d; /* nested icon container */
+  --surface-pill: #413f40; /* top-bar pill button */
+  --surface-segment: #404040; /* active segmented control thumb */
+  --divider: #2c2c2c;
+  --track: #364153; /* progress / slider track */
+
+  /* Brand (purple/indigo) */
+  --brand: #4f62ec; /* primary CTA */
+  --brand-soft: #7584f3; /* progress fill, hover, active glyph */
+  --brand-text: #8795f6; /* selected label on segmented */
+
+  /* Status */
+  --success: #34c759;
+  --success-soft: #57dd7d;
+  --warn: #ff9f33;
+  --danger: #ff5356;
+  --star: #fbbe25;
+
+  /* Text */
+  --text: #ffffff;
+  --text-muted: #99a1af;
+  --text-soft: #d5d0d4;
+  --text-quiet: #8b8b8b;
+
+  /* Role tag accents (from feed cards) */
+  --tag-artist: #cf7b4d;
+  --tag-customer: #98aeff;
+  --tag-studio: #cf98ff;
+  --tag-composer: #c7348f;
+
+  /* Typography — self-hosted Fixel Display matches the Figma source exactly.
+     Manrope kept as a transitional fallback in case the woff2 fails to load. */
+  --font: 'Fixel Display', 'Manrope', -apple-system, BlinkMacSystemFont,
+    'SF Pro Rounded', 'Segoe UI', Roboto, system-ui, sans-serif;
+
+  /* Radii (px) — Figma top values: 16 (cards), 12 (chips), 32 (screen), 48 (mockup),
+     96 (pills/buttons). 999 kept for legacy circle shorthand. */
+  --r-chip: 12px;
+  --r-card: 16px;
+  --r-lg: 24px;
+  --r-screen: 32px;
+  --r-button: 96px;
+  --r-pill: 999px;
+  /* legacy aliases */
+  --r-sm: 12px;
+  --r-md: 16px;
+
+  /* Spacing scale — Figma uses non-pure-4-multiples (10, 6, 7.5).
+     Most-used gaps from the file: 4, 10, 12, 8, 6, 16, 24, 32. */
+  --s-half: 2px;
+  --s-1: 4px;
+  --s-1-5: 6px;
+  --s-2: 8px;
+  --s-2-5: 10px; /* Figma's most common gap (cards, lists) */
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 28px;
+  --s-8: 32px;
+  --s-10: 40px;
+
+  /* Layout */
+  --frame-w: 390px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -1,0 +1,195 @@
+/*
+ * Profile screen — pixel-mapped to Figma node 1:10087.
+ *   - Card: 358 x 142 (auto), padding 16, item-spacing 16
+ *   - Avatar: 60 x 60, circle
+ *   - Name: Fixel 700 / 20 / lh=28
+ *   - Meta: Fixel 400 / 14 / lh=19, gap=8
+ *   - Progress: track 326 x 6
+ *   - Menu list: gap 12, item 358 x 72, padding 16, gap 12
+ *   - Item icon: 40x40 circle, internal padding 10
+ *   - Item label: Fixel 500 / 16 / lh=24
+ *   - Item hint: Fixel 400 / 12 / lh=20
+ */
+
+.prof {
+  padding-bottom: 0;
+}
+
+.prof-pad {
+  /* Extra bottom padding so the last menu row clears the bottom tab bar
+     (which floats with shadow ~119px tall + 16px breathing). */
+  padding: 0 16px 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+/* Figma: card fill is #242424 (surface-2), NOT surface-1. */
+.prof-card {
+  background: var(--surface-2);
+  border-radius: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.prof-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.prof-ava {
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4d6280, #364153);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.prof-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.prof-head-name {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.prof-head-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 400;
+  color: var(--text);
+  flex-wrap: nowrap;
+}
+
+.prof-head-meta > svg { flex-shrink: 0; }
+
+.prof-role {
+  color: var(--brand-soft);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.prof-meta-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prof-meta-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prof-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prof-progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+}
+
+.prof-progress-row .muted { color: var(--text-muted); }
+
+.prof-progress-track {
+  height: 6px;
+  background: var(--track);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.prof-progress-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 999px;
+}
+
+.prof-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Figma menu item: 358x72, padding 16, gap 12, r=16, fill=#242424. */
+.prof-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface-2);
+  border-radius: 16px;
+  width: 100%;
+  text-align: left;
+  min-height: 72px;
+}
+
+.prof-menu-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.prof-menu-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.prof-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prof-menu-label {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--text);
+}
+
+.prof-menu-hint {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.prof-menu-hint--inline {
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--text-muted);
+}
+
+.prof-menu-chev { flex-shrink: 0; opacity: .9; }

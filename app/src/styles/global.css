@@ -1,0 +1,147 @@
+@import './fonts.css';
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.4;
+  /* Avoid the Telegram WebView overscroll bounce that breaks fixed footers */
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  /* Telegram Mini Apps render at the device viewport. We center the 390px
+     frame on wider browsers (desktop) without distorting the design. */
+  display: flex;
+  justify-content: center;
+}
+
+#root {
+  width: 100%;
+  max-width: var(--frame-w);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+}
+
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  resize: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-quiet);
+}
+
+a {
+  color: var(--brand-soft);
+  text-decoration: none;
+}
+
+/* Hide scrollbars but keep scrolling on horizontal chip rows */
+.h-scroll {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.h-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Reusable patterns */
+.screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding-top: calc(var(--safe-top) + 16px);
+  padding-bottom: var(--safe-bottom);
+  background: var(--bg);
+  min-height: 100dvh;
+}
+
+.screen-pad {
+  padding: 0 16px;
+}
+
+/* Typography classes — sizes & line-heights pulled directly from Figma node
+   specs (file 8R0Uvtglbzq82ZA2TVQdSU). Letter-spacing is 0 per Figma. */
+/* Onboarding intro headings: Figma 28/700/lh=28 (nodes 1:5769, 14:3307,
+   1:5865, 1:5925, 1:5985). */
+.h1 {
+  font-size: 28px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+/* Page-level title used on Заявки/Отклики/Заказы/Уведомления/Фильтр/Лента
+   detail headers: Figma 20/500/lh=27.6 (nodes 1:8901, 1:9116, 1:10279,
+   14:2448, 16:7025, 1:9207...). NOTE: weight is 500, NOT 700. */
+.h1-page {
+  font-size: 20px;
+  line-height: 27.6px;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.h2 {
+  font-size: 20px;
+  line-height: 27.6px;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.h3 {
+  font-size: 16px;
+  line-height: 22px; /* Figma row titles: 600/16/lh=22 */
+  font-weight: 600;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 22px; /* Figma body: 500/16/lh=22 */
+  color: var(--text);
+}
+
+.muted {
+  color: var(--text-muted);
+}

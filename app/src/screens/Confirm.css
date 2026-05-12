@@ -1,0 +1,63 @@
+.cf {
+  padding-bottom: 0;
+}
+
+.cf-top {
+  padding: 0 16px;
+}
+
+.cf-pad {
+  padding: 0 16px;
+}
+
+.cf-title {
+  margin-bottom: 20px;
+}
+
+.cf-card {
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.cf-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.cf-row .muted {
+  color: var(--text-quiet);
+}
+
+.cf-row--strong span:last-child {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cf-comment .field-label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-quiet);
+  padding: 0 4px 8px;
+}
+
+.cf-comment-box {
+  background: var(--surface-1);
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+}
+
+.cf-cta {
+  margin-top: auto;
+  padding: 16px;
+}

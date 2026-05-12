@@ -1,0 +1,86 @@
+/*
+ * Fixel Display — self-hosted from /public/fonts/.
+ *
+ * Design source uses "Fixel Display" exclusively. We ship every weight in
+ * woff2 (preferred for size + browser support) plus a variable TTF fallback
+ * so non-multiple-of-100 weights (Figma uses 590 in places) resolve cleanly.
+ *
+ * `font-display: swap` keeps initial paint fast inside the Telegram WebView.
+ */
+
+/* Variable axis — handles arbitrary weights (e.g. 590 from the Figma source).
+   Listed FIRST so the static face declarations below override at exact weight
+   matches (browsers prefer the closer match when multiple faces qualify). */
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelVariable.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Static cuts — give the browser a closer match for the canonical CSS weights
+   so antialiasing + hinting stay crisp. */
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src: url('/fonts/FixelDisplay-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}

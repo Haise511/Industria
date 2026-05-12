@@ -1,0 +1,35 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 12px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.topbar-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 32px;
+  background: var(--surface-pill);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition: opacity 0.15s ease;
+}
+.topbar-pill:active {
+  opacity: 0.7;
+}
+.topbar-pill--icon {
+  width: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* The <CloseGlyph /> svg renders inline (no rotation hack). */

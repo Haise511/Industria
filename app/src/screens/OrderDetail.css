@@ -1,0 +1,116 @@
+.detail-pad {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detail-author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+/* Author avatar — Figma renders the studio cover at ~140 logical px,
+   but the visual weight on the page is closer to ~120 due to surrounding
+   margins. We match the Figma dimension exactly. */
+.detail-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #3a3a3a, #2c2c2c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.detail-author-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.detail-author-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.detail-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.detail-role {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.detail-section-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-quiet);
+  margin: 0 0 8px;
+}
+
+.detail-text {
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+  color: var(--text);
+}
+
+.detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.detail-row .muted {
+  font-size: 14px;
+  color: var(--text-quiet);
+}
+
+.detail-row-val {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-row--strong .muted {
+  font-weight: 500;
+}
+
+.detail-price {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.detail-cta {
+  margin-top: auto;
+  padding: 16px;
+}

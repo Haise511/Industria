@@ -1,0 +1,1 @@
+- [Industria mini app project](project_industria.md) — React+TS+Vite at `Goluboy\industria`; Fixel Display self-hosted; iconsax-react Bold; QA tooling in `industria-build`.

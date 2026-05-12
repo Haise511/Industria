@@ -1,0 +1,170 @@
+/*
+ * Order card — Figma node "text-field" (390x129, padding 16, gap 12, r=16,
+ * fill #272727). Internal vertical gap is 12 (NOT 10).
+ */
+.ocard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.18s ease;
+}
+.ocard:active {
+  transform: scale(0.99);
+  background: #2c2c2c;
+}
+
+.ocard-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* Allow the meta-row to overflow horizontally rather than wrap to two
+     lines; an order card in Figma always shows price + meta items on a
+     single row (text-field-text frame is 358 wide). */
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+/* Figma: 500/16/lh=15 (tight) — weight 500, NOT 600. */
+.ocard-price {
+  font-size: 16px;
+  line-height: 15px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ocard-meta-right {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  min-width: 0;
+  /* Each meta item already has white-space:nowrap below; if total content
+     exceeds card width, hide overflow gracefully (no two-line stack). */
+  overflow: hidden;
+}
+
+/* Figma: 400/12/lh=15 with icon-text gap=4. */
+.ocard-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Figma: 400/14/lh=17, two-line clamp. */
+.ocard-desc {
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Figma footer row: gap=12 between author block and status badge. */
+.ocard-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Figma: author group gap=4 (avatar-to-text), inner text group gap=6. */
+.ocard-author {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ocard-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ocard-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Figma: 400/16/lh=15 (NOT 14/500). */
+.ocard-author-name {
+  font-size: 16px;
+  line-height: 15px;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Figma: 400/12/lh=15. */
+.ocard-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+/* Figma: 400/12/lh=15 (NOT 500). */
+.ocard-role {
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  margin-left: auto;
+}
+
+.ocard-status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+/* Figma: action buttons 24x24, r=9, fill=#404040, gap=4 between. */
+.ocard-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ocard-action {
+  width: 24px;
+  height: 24px;
+  border-radius: 9px;
+  background: var(--surface-segment);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+}
