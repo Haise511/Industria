@@ -194,3 +194,54 @@
   margin-top: auto;
   padding: 16px;
 }
+
+/* Sort sheet (`/sort` route) — Figma "Сотрировка" sheet. Radio rows in a
+   surface-1 pill card with brand-filled active dot. */
+.flt-sort-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.flt-sort-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  background: var(--surface-1);
+  border-radius: 16px;
+  text-align: left;
+  color: var(--text);
+}
+
+.flt-sort-label {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.flt-radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--text-quiet);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.flt-radio.is-on {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+
+.flt-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fff;
+}

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -19,12 +19,53 @@ const ROLES: Array<{ id: string; label: string; img: string }> = [
   { id: 'customer', label: 'Заказчик', img: roleCustomerImg },
 ];
 
+/** Sort options shown on `/sort` (Figma "Сотрировка" sheet, design-refs
+ *  Фильтр/Сотрировка.png). Single-select radio rows + brand CTA. */
+const SORT_OPTIONS: Array<{ id: string; label: string }> = [
+  { id: 'default', label: 'По умолчанию' },
+  { id: 'newest', label: 'Сначала новые' },
+  { id: 'price-desc', label: 'Дороже' },
+  { id: 'price-asc', label: 'Дешевле' },
+  { id: 'rating', label: 'По рейтингу' },
+];
+
 export function Filter() {
   const nav = useNavigate();
+  const loc = useLocation();
+  const isSort = loc.pathname.startsWith('/sort');
   const [selectedRole, setSelectedRole] = useState<string | null>('artist');
   const [rating, setRating] = useState<number | null>(null);
   const [contract, setContract] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [sort, setSort] = useState<string>('default');
+
+  if (isSort) {
+    return (
+      <div className="screen flt">
+        <TopBar variant="close" />
+        <div className="flt-pad">
+          <h1 className="h1-page flt-title">Сначала показывать</h1>
+          <div className="flt-sort-list">
+            {SORT_OPTIONS.map((o) => (
+              <button
+                key={o.id}
+                className={`flt-sort-row ${sort === o.id ? 'is-active' : ''}`}
+                onClick={() => setSort(o.id)}
+              >
+                <span className={`flt-radio ${sort === o.id ? 'is-on' : ''}`}>
+                  {sort === o.id && <span className="flt-radio-dot" />}
+                </span>
+                <span className="flt-sort-label">{o.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flt-cta">
+          <PrimaryButton onClick={() => nav(-1)}>Выбрать</PrimaryButton>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen flt">
