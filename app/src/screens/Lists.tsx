@@ -1,15 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Add } from 'iconsax-react';
 import { TopBar } from '../components/TopBar';
 import { OrderCard } from '../components/OrderCard';
 import { myOrders, responses, activeOrders } from '../data/mock';
 import './Lists.css';
-// Reuse the floating "Создать заявку" CTA styles from Feed (.feed-fab) on
-// MyOrders so users can create an order from their own list without bouncing
-// through /feed first.
-import './Feed.css';
 
-/** Заявки — заявки, созданные текущим пользователем. */
+/** Заявки — заявки, созданные текущим пользователем.
+ *  Figma «Заявки / Заявки.png» не показывает плавающий FAB на этом табе —
+ *  «Создать заявку» доступно только из ленты. */
 export function MyOrders() {
   const nav = useNavigate();
   return (
@@ -23,12 +20,6 @@ export function MyOrders() {
           ))}
         </div>
       </div>
-      {/* Same floating CTA as the Feed screen — keep the create-order entry
-          point reachable on the user's own list too (Figma node 1:6452). */}
-      <button className="feed-fab" onClick={() => nav('/create')}>
-        <span>Создать заявку</span>
-        <Add size={20} color="#fff" variant="Linear" />
-      </button>
     </div>
   );
 }
