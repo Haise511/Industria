@@ -1,17 +1,47 @@
+/*
+ * "Проверьте данные" — Figma «Создать заявку / Проверьте данные».
+ *   - Title 28/700/lh=28
+ *   - «Описание» label: muted, 14/400 (matches order-detail section labels)
+ *   - body text: 14/400/lh=20, white
+ *   - info card: surface-1, r=16, p=16, row-gap 14, rows are label↔value
+ *     (label muted/quiet, value white)
+ *   - CTA full-width pill
+ */
+
 .cf {
   padding-bottom: 0;
 }
 
-.cf-top {
-  padding: 0 16px;
-}
-
 .cf-pad {
   padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .cf-title {
-  margin-bottom: 20px;
+  margin: 0;
+}
+
+.cf-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cf-section-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.cf-text {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0;
 }
 
 .cf-card {
@@ -22,7 +52,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-bottom: 16px;
 }
 
 .cf-row {
@@ -30,31 +59,20 @@
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
+  line-height: 19px;
 }
 
-.cf-row .muted {
+.cf-row-label {
   color: var(--text-quiet);
+  font-weight: 400;
 }
 
-.cf-row--strong span:last-child {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.cf-comment .field-label {
-  display: block;
-  font-size: 14px;
-  color: var(--text-quiet);
-  padding: 0 4px 8px;
-}
-
-.cf-comment-box {
-  background: var(--surface-1);
-  border-radius: 16px;
-  padding: 16px;
-  font-size: 14px;
-  line-height: 20px;
+.cf-row-val {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--text);
+  font-weight: 500;
 }
 
 .cf-cta {

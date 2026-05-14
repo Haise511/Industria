@@ -5,38 +5,45 @@ import './Confirm.css';
 
 /**
  * "Проверьте данные" — final confirmation before submitting an отклик/заявка.
- * Same layout used both in respond and create flows in the design.
+ * Same layout used both in respond and create flows.
+ *
+ * Layout (Figma «Создать заявку / Проверьте данные»):
+ *   1) Title "Проверьте данные"
+ *   2) "Описание" label + body text (the actual order description for the
+ *      create flow, or the responder's comment for the respond flow)
+ *   3) Info card: Тип работы / Город / Дата / Режим / Прайс
+ *   4) Primary CTA ("Опубликовать" for create, "Отправить отклик" for
+ *      respond)
  */
 interface ConfirmProps {
-  /** Called when the primary button is tapped. Defaults to navigate(-2). */
   ctaLabel?: string;
+  /** Body text shown under the «Описание» label. */
   comment?: string;
   next?: string;
 }
+
+const DEFAULT_DESCRIPTION =
+  'Нужен артист, который поет в эстрадном стиле, уверенно держится на сцене, умеет создавать атмосферу праздника и зажечь танцпол! Ищем харизматичного профи с мощным вокалом и живой энергетикой для ярких шоу. Если ты мастер импровизации и любишь публику — мы ждем тебя в команду!';
 
 export function Confirm({ ctaLabel = 'Отправить отклик', comment, next = '/feed' }: ConfirmProps) {
   const nav = useNavigate();
   return (
     <div className="screen cf">
-      <div className="cf-top">
-        <TopBar variant="back" />
-      </div>
+      <TopBar variant="back" />
       <div className="cf-pad">
         <h1 className="h1 cf-title">Проверьте данные</h1>
 
-        <div className="cf-card">
-          <Row label="Тип работы" value="По договору" />
-          <Row label="Город" value="Бишкек" />
-          <Row label="Дата" value="22-25 апреля" />
-          <Row label="Прайс" value="23 900 сом" strong />
-        </div>
+        <section className="cf-section">
+          <h3 className="cf-section-title">Описание</h3>
+          <p className="cf-text">{comment ?? DEFAULT_DESCRIPTION}</p>
+        </section>
 
-        <div className="cf-comment">
-          <label className="field-label">Комментарий</label>
-          <div className="cf-comment-box">
-            {comment ??
-              'Привет! Очень откликнулся ваш запрос. У нас сейчас готовится новый проект под сезон, и мы ищем постоянного участника в команду. Если вам интересно поработать в драйвовом коллективе с перспективой постоянных выступлений, давайте созвонимся'}
-          </div>
+        <div className="cf-card">
+          <Row label="Тип работы" value="По договору" iconRight="📝" />
+          <Row label="Город" value="Бишкек" />
+          <Row label="Дата" value="8-11 апреля" />
+          <Row label="Режим" value="Обычный" />
+          <Row label="Прайс" value="23 900 сом" />
         </div>
       </div>
 
@@ -47,11 +54,14 @@ export function Confirm({ ctaLabel = 'Отправить отклик', comment,
   );
 }
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Row({ label, value, iconRight }: { label: string; value: string; iconRight?: string }) {
   return (
-    <div className={`cf-row ${strong ? 'cf-row--strong' : ''}`}>
-      <span className="muted">{label}</span>
-      <span>{value}</span>
+    <div className="cf-row">
+      <span className="cf-row-label">{label}</span>
+      <span className="cf-row-val">
+        {iconRight && <span aria-hidden>{iconRight}</span>}
+        {value}
+      </span>
     </div>
   );
 }

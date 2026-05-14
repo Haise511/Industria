@@ -74,7 +74,7 @@ export default function App() {
         {/* Create order flow */}
         <Route path="/create" element={<CreateOrder />} />
         <Route path="/create/date" element={<DatePicker />} />
-        <Route path="/create/confirm" element={<Confirm ctaLabel="Создать заявку" next="/orders/my" />} />
+        <Route path="/create/confirm" element={<Confirm ctaLabel="Опубликовать" next="/orders/my" />} />
 
         {/* Modals & secondary screens */}
         <Route path="/notifications" element={<Notifications />} />
