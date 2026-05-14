@@ -1,3 +1,13 @@
+/*
+ * Notifications — Figma design-refs/Уведомления/Уведомления.png.
+ *   - Title 28/700/lh=28
+ *   - Section labels (Сегодня / Вчера / 6 мая): 14/400, text-quiet
+ *   - Card: surface-1, r=16, p=16, gap 14
+ *   - Avatar placeholder 40x40 round
+ *   - Unread title: white 16/600, body white 14/400/lh=18
+ *   - Read title: muted/quiet 16/500, body text-quiet 14/400/lh=18
+ */
+
 .notif-pad {
   padding: 0 16px;
 }
@@ -12,8 +22,8 @@
 
 .notif-section {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-weight: 400;
+  color: var(--text-quiet);
   margin: 0 0 8px;
   padding-left: 4px;
 }
@@ -26,14 +36,14 @@
 
 .notif-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   padding: 16px;
   background: var(--surface-1);
   border-radius: 16px;
 }
 
-.notif-dot {
+.notif-avatar {
   width: 40px;
   height: 40px;
   border-radius: 999px;
@@ -45,17 +55,39 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .notif-h4 {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
-  color: var(--text);
+  line-height: 22px;
 }
 
 .notif-body {
   font-size: 14px;
   margin: 0;
   line-height: 18px;
+  font-weight: 400;
+}
+
+/* Unread — bright white throughout. */
+.notif-item.is-unread .notif-h4 {
+  color: var(--text);
+  font-weight: 600;
+}
+.notif-item.is-unread .notif-body {
+  color: var(--text);
+}
+
+/* Read — dimmed to text-quiet for both title and body so the item visually
+   recedes against the unread one above it. Matches the read-state rows in
+   the PNG (Карина, Подписка, Технические работы). */
+.notif-item.is-read .notif-h4 {
+  color: var(--text-quiet);
+  font-weight: 500;
+}
+.notif-item.is-read .notif-body {
+  color: var(--text-quiet);
 }

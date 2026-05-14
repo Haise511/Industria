@@ -67,11 +67,21 @@ export const activeOrders: Order[] = [
   { ...feedOrders[3], id: 'a2', status: 'accepted' },
 ];
 
-export const notifications = [
+/** Notifications grouped by section. `unread` flips the visual state to
+ *  bright/white in the Figma design; read notifications use muted text.
+ *  Only the most-recent item in "Сегодня" is unread in the design. */
+export interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  unread?: boolean;
+}
+
+export const notifications: Array<{ section: string; items: Notification[] }> = [
   {
     section: 'Сегодня',
     items: [
-      { id: 'n1', title: 'Bea Studio приняла ваш отклик', body: 'Перейдите в чат, чтобы начать совместный проект' },
+      { id: 'n1', title: 'Bea Studio приняла ваш отклик', body: 'Перейдите в чат, чтобы начать совместный проект', unread: true },
       { id: 'n2', title: 'Карина готова к сотрудничеству', body: 'Ваша заявка привлекла…' },
     ],
   },
