@@ -32,18 +32,24 @@ export function CreateOrder() {
             <Chevron />
           </button>
 
+          {/* Mode segmented — full-width, matches the Onboarding picker. The
+              new Figma design shows the same 🎵 / 🪕 emoji pair as on the
+              «Заполните основные данные» step, not the abstract gradient
+              squares we used previously. */}
           <div className="create-modes">
             <button
               className={`create-mode ${mode === 'normal' ? 'is-active' : ''}`}
               onClick={() => setMode('normal')}
+              type="button"
             >
-              <span className="create-mode-dot" /> Обычный
+              <span aria-hidden>🎵</span> Обычный
             </button>
             <button
               className={`create-mode ${mode === 'toi' ? 'is-active' : ''}`}
               onClick={() => setMode('toi')}
+              type="button"
             >
-              <span className="create-mode-dot create-mode-dot--alt" /> Тойский
+              <span aria-hidden>🪕</span> Тойский
             </button>
           </div>
         </div>
