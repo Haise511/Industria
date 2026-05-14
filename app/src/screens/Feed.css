@@ -100,22 +100,31 @@
   padding: 0 16px 120px;
 }
 
+/* Floating "Создать заявку" CTA — wide pill above the tab bar. Mirrors the
+   Figma node 1:6452: text first, plus-icon trailing, brand purple bg with a
+   strong colored shadow. Wider than .pbtn--full so it visually anchors the
+   screen above the floating tab bar. */
 .feed-fab {
   position: fixed;
-  bottom: 100px;
+  bottom: calc(var(--safe-bottom) + 104px);
   left: 50%;
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 46px;
-  padding: 0 22px;
+  justify-content: center;
+  gap: 10px;
+  height: 52px;
+  min-width: 240px;
+  padding: 0 28px;
   background: var(--brand);
   color: #fff;
   font-size: 16px;
   font-weight: 500;
   border-radius: 96px;
-  box-shadow: 0 12px 32px rgba(79, 98, 236, 0.45);
+  box-shadow: 0 14px 36px rgba(79, 98, 236, 0.5);
   z-index: 20;
   white-space: nowrap;
+}
+.feed-fab:active {
+  transform: translateX(-50%) scale(0.98);
 }

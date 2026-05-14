@@ -48,6 +48,13 @@
   --font: 'Fixel Display', 'Manrope', -apple-system, BlinkMacSystemFont,
     'SF Pro Rounded', 'Segoe UI', Roboto, system-ui, sans-serif;
 
+  /* Fixel's alternative glyph set — the Figma file enables these OpenType
+     features globally to swap the default 'a' / 'g' / etc. for their
+     alternative single-storey shapes (see fixel.macpaw.com). Apply on every
+     text element via font-feature-settings: var(--font-features). */
+  --font-features: 'salt', 'ss02', 'ss03', 'ss04', 'ss08', 'ss09', 'ss10',
+    'ss11', 'ss12', 'ss13', 'hist', 'ordn', 'lnum', 'pnum';
+
   /* Radii (px) — Figma top values: 16 (cards), 12 (chips), 32 (screen), 48 (mockup),
      96 (pills/buttons). 999 kept for legacy circle shorthand. */
   --r-chip: 12px;

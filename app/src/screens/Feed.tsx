@@ -65,8 +65,8 @@ export function Feed() {
       </div>
 
       <button className="feed-fab" onClick={() => nav('/create')}>
-        <Add size={16} color="#fff" variant="Linear" />
         <span>Создать заявку</span>
+        <Add size={20} color="#fff" variant="Linear" />
       </button>
     </div>
   );

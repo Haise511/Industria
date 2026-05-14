@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { initTelegram, getTg } from './telegram';
 import { BottomNav } from './components/BottomNav';
-import { OnbLanguage, OnbRole, OnbProfile, OnbLoading } from './screens/Onboarding';
+import { OnbLanguage, OnbRole, OnbBasicData, OnbProfile, OnbLoading } from './screens/Onboarding';
 import { Feed } from './screens/Feed';
 import { OrderDetail } from './screens/OrderDetail';
 import { DatePicker } from './screens/DatePicker';
@@ -55,6 +55,7 @@ export default function App() {
         <Route path="/loading" element={<OnbLoading />} />
         <Route path="/onboarding/language" element={<OnbLanguage />} />
         <Route path="/onboarding/role" element={<OnbRole />} />
+        <Route path="/onboarding/basic" element={<OnbBasicData />} />
         <Route path="/onboarding/profile" element={<OnbProfile />} />
         <Route path="/onboarding/loading" element={<OnbLoading />} />
 

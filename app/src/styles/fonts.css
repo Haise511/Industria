@@ -6,6 +6,12 @@
  * so non-multiple-of-100 weights (Figma uses 590 in places) resolve cleanly.
  *
  * `font-display: swap` keeps initial paint fast inside the Telegram WebView.
+ *
+ * The Figma source enables Fixel's OpenType stylistic alternates (SALT +
+ * SS02–SS13, plus HIST/ORDN/LNUM/PNUM). This swaps the default two-storey
+ * "a" / "g" for the alternative single-storey shapes that give Fixel its
+ * distinctive look. Applied globally on html in global.css via
+ * `font-feature-settings`.
  */
 
 /* Variable axis — handles arbitrary weights (e.g. 590 from the Figma source).

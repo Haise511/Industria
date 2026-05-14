@@ -71,10 +71,14 @@
   gap: 12px;
 }
 
+/* Language / role choice labels — these are the "headlines" of each choice
+   row, so they opt into Fixel's stylistic alternates the same way .h1/.h2 do
+   (single-storey a/g + alt symbols). Body descriptions stay default glyphs. */
 .onb-row-label {
   font-size: 16px;
   font-weight: 600;
   line-height: 22px;
+  font-feature-settings: var(--font-features);
 }
 
 .onb-flag {
@@ -130,6 +134,7 @@
   font-weight: 600;
   line-height: 22px;
   color: var(--text);
+  font-feature-settings: var(--font-features);
 }
 /* Figma: role description is white (400/14/lh=19), not muted. */
 .onb-row-desc {
@@ -177,6 +182,88 @@
   margin-bottom: 32px;
 }
 
+/* Basic-data step uses tighter row spacing (Figma row gap = 16) and lets the
+   header breathe — no avatar to anchor against here. */
+.onb-stack--basic {
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* City select — re-uses .field-box layout but routes through native <select>
+   so the picker is OS-native. We hide the system chevron and ship our own
+   from iconsax to match the Figma "chevron-up" instance (node 1:5883). */
+.onb-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text);
+}
+.onb-select-control {
+  flex: 1;
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  outline: none;
+}
+.onb-select-control option {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+/* Mode segmented — two pill buttons inside a rounded container. Figma
+   1:5887 (354x56), inner buttons 168x48, brand-soft active fill at 14% alpha
+   approximated via mixing the surface with --brand-soft. */
+.onb-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--surface-1);
+  border-radius: 16px;
+  padding: 4px;
+}
+.onb-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.onb-seg-btn.is-active {
+  background: var(--surface-segment);
+  color: #fff;
+}
+
+/* Hint below the segmented control (Figma node 1:5896 "toast"). Two-color
+   muted text with an info glyph; bold tokens highlight the mode names. */
+.onb-mode-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 4px 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--text-quiet);
+}
+.onb-mode-hint b {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.onb-mode-hint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .onb-stack .field-label {
   display: block;
   font-size: 14px;
@@ -218,19 +305,75 @@
   padding: 16px 0 24px;
 }
 
-/* Splash — Figma node 1:5957 "Загрузка". Background is a solid #1d1d1d
-   per the canvas fill on that frame; the logo is the rasterised "Индустрия
-   Лого00" image fill (node 1:5983, 96x59 in Figma). H1 underneath is
-   28/700/lh=28 white, mirroring node 1:5985. */
+/* Splash — Figma node 1:5957 "Загрузка". Brand-purple base (#575dff per
+   the "Gradient" frame fill on node 1:5958) with three heavily-blurred blue
+   ellipses (1:5959/60/61, color #5C9CE2, blur 180) and one mint vector
+   (1:5962, color #94FFEE, blur 150) bleeding in from the edges to create
+   the aurora effect. Logo is the rasterised "Индустрия Лого00" image fill
+   (1:5983, 96x59); h2 underneath is Fixel 28/700/lh=28 white (1:5985). */
 .onb-splash {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  background: #575dff;
   min-height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.onb-splash-aurora {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.onb-splash-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.85;
+}
+/* Top-left blue */
+.onb-splash-blob--a {
+  width: 70%;
+  aspect-ratio: 1 / 1.14;
+  left: -25%;
+  top: 15%;
+  background: #5C9CE2;
+}
+/* Top-right blue */
+.onb-splash-blob--b {
+  width: 68%;
+  aspect-ratio: 1 / 1.16;
+  right: -20%;
+  top: -14%;
+  background: #5C9CE2;
+}
+/* Bottom-right blue */
+.onb-splash-blob--c {
+  width: 68%;
+  aspect-ratio: 1 / 1.16;
+  right: -28%;
+  bottom: -10%;
+  background: #5C9CE2;
+}
+/* Mint highlight across the middle band */
+.onb-splash-blob--mint {
+  width: 110%;
+  aspect-ratio: 1 / 1.02;
+  left: -10%;
+  top: 30%;
+  background: #94FFEE;
+  filter: blur(150px);
+  opacity: 0.45;
+  mix-blend-mode: screen;
 }
 
 .onb-splash-center {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -239,6 +382,7 @@
   gap: 24px;
   text-align: center;
   color: #fff;
+  padding: 0 16px;
 }
 
 .onb-splash-logo {
@@ -253,4 +397,5 @@
   font-weight: 700;
   color: #fff;
   margin: 0;
+  font-feature-settings: var(--font-features);
 }

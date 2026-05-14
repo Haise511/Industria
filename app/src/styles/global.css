@@ -98,7 +98,16 @@ a {
 }
 
 /* Typography classes — sizes & line-heights pulled directly from Figma node
-   specs (file 8R0Uvtglbzq82ZA2TVQdSU). Letter-spacing is 0 per Figma. */
+   specs (file 8R0Uvtglbzq82ZA2TVQdSU). Letter-spacing is 0 per Figma.
+   Headings opt into Fixel's stylistic alternates (single-storey a/g + alt
+   symbols) via --font-features; body text keeps the default glyph set. */
+.h1,
+.h1-page,
+.h2,
+.h3 {
+  font-feature-settings: var(--font-features);
+}
+
 /* Onboarding intro headings: Figma 28/700/lh=28 (nodes 1:5769, 14:3307,
    1:5865, 1:5925, 1:5985). */
 .h1 {

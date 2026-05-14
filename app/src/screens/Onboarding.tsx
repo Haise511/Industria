@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { TextArea } from '../components/Field';
+import { TextArea, TextInput } from '../components/Field';
 import { Flag } from '../components/Flag';
-import { InfoCircle } from 'iconsax-react';
+import { ArrowDown2, InfoCircle } from 'iconsax-react';
 import { haptic } from '../telegram';
 // Role illustrations extracted from the Figma file (image fills on nodes
 // 14:3313 / 14:3320 / 14:3327 / 14:3334) — these are not iconsax glyphs but
@@ -30,7 +30,7 @@ export function OnbLanguage() {
   return (
     <div className="screen">
       <TopBar variant="close" onLeft={() => nav('/')} />
-      <Progress step={1} total={4} />
+      <Progress step={1} total={4} /* language picker, see Figma 1:5746 */ />
       <div className="onb-pad">
         <div className="onb-head">
           <h1 className="h1">Выберите язык приложения</h1>
@@ -45,6 +45,7 @@ export function OnbLanguage() {
                 haptic('light');
                 nav('/onboarding/role');
               }}
+              type="button"
             >
               {/* Flag is a 32x32 SVG icon, matching the Figma "Flag Pack"
                   instance dimensions. */}
@@ -82,7 +83,7 @@ export function OnbRole() {
         </div>
         <div className="onb-list">
           {roles.map((r) => (
-            <button key={r.id} className="onb-row onb-row--col" onClick={() => { haptic('light'); nav('/onboarding/profile'); }}>
+            <button key={r.id} className="onb-row onb-row--col" onClick={() => { haptic('light'); nav('/onboarding/basic'); }}>
               <span className="onb-role-illu" aria-hidden>
                 <img src={r.img} alt="" />
               </span>
@@ -98,13 +99,115 @@ export function OnbRole() {
   );
 }
 
-/** Step 3: profile fill. */
+/**
+ * Step 3: основные данные — name, telegram username, city, mode.
+ * Mirrors Figma frame 1:5859 "Заполните основные данные" (progress 3/4).
+ */
+export function OnbBasicData() {
+  const nav = useNavigate();
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [city, setCity] = useState('Бишкек');
+  const [mode, setMode] = useState<'normal' | 'toi'>('normal');
+  return (
+    <div className="screen">
+      <TopBar variant="close" onLeft={() => nav('/')} />
+      <Progress step={3} total={4} />
+      <div className="onb-pad">
+        <div className="onb-head">
+          <h1 className="h1">Заполните основные данные</h1>
+          <p className="onb-sub">Эти данные нужны чтобы настроить ленту</p>
+        </div>
+
+        <div className="onb-stack onb-stack--basic">
+          <div>
+            <label className="field-label">Ваше имя/псевдоним</label>
+            <div className="field-box">
+              <TextInput
+                placeholder="Lil asian batya"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="field-label">Телеграм ник (username)</label>
+            <div className="field-box">
+              <TextInput
+                placeholder="@example"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="field-label">Выберите город</label>
+            {/* Native <select> styled to match the design — picker UX is
+                delegated to the OS so it matches what Telegram users expect. */}
+            <div className="field-box onb-select">
+              <select
+                className="onb-select-control"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              >
+                <option>Бишкек</option>
+                <option>Алматы</option>
+                <option>Ташкент</option>
+                <option>Москва</option>
+              </select>
+              <ArrowDown2 size={18} color="currentColor" variant="Linear" />
+            </div>
+          </div>
+
+          <div>
+            <label className="field-label">Режим</label>
+            <div className="onb-segment" role="tablist">
+              <button
+                type="button"
+                className={`onb-seg-btn ${mode === 'normal' ? 'is-active' : ''}`}
+                onClick={() => { haptic('light'); setMode('normal'); }}
+              >
+                <span aria-hidden>🎵</span>
+                <span>Обычный</span>
+              </button>
+              <button
+                type="button"
+                className={`onb-seg-btn ${mode === 'toi' ? 'is-active' : ''}`}
+                onClick={() => { haptic('light'); setMode('toi'); }}
+              >
+                <span aria-hidden>🪕</span>
+                <span>Тойский</span>
+              </button>
+            </div>
+            <p className="onb-mode-hint">
+              <InfoIcon />
+              <span>
+                <b>Обычный</b>: Современная музыкальная индустрия — запись,
+                клипы, продакшн.<br />
+                <b>Той</b>: Тойская индустрия — свадьбы, юбилеи, мероприятия,
+                выступления.
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="onb-cta">
+          <PrimaryButton onClick={() => nav('/onboarding/profile')}>Продолжить</PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Step 4: profile fill. */
 export function OnbProfile() {
   const nav = useNavigate();
   return (
     <div className="screen">
       <TopBar variant="close" onLeft={() => nav('/')} />
-      <Progress step={3} total={4} />
+      <Progress step={4} total={4} />
       <div className="onb-pad">
         <div className="onb-head">
           <h1 className="h1">Заполните профиль</h1>
@@ -151,21 +254,34 @@ export function OnbProfile() {
   );
 }
 
-/** Loading splash — used both at app entry (`/` and `/loading`) and at the end
- * of profile setup. Auto-advances after ~1.5s. */
+/** Loading splash — Figma frame "Загрузка" (1:5957). Brand-purple aurora
+ *  background (1:5958 + blurred ellipses 1:5959/60/61 + mint vector 1:5962),
+ *  centered logo (1:5983) + "От идеи до гонорара" Bold/28 (1:5985).
+ *
+ *  Same screen serves two flows:
+ *    - app entry (`/`, `/loading`) → advances to `/onboarding/language`
+ *    - end of profile setup (`/onboarding/loading`) → advances to `/feed`
+ *  Branch by current path so we don't loop back into onboarding. */
 export function OnbLoading() {
   const nav = useNavigate();
-  // useEffect ensures the timer fires once on mount and is cleared if the
-  // component unmounts before the timeout (avoids the Strict-Mode double-fire
-  // and the dangling-timer warning).
+  const loc = useLocation();
   useEffect(() => {
-    const id = setTimeout(() => nav('/onboarding/language'), 1500);
+    const next = loc.pathname === '/onboarding/loading' ? '/feed' : '/onboarding/language';
+    const id = setTimeout(() => nav(next, { replace: true }), 1500);
     return () => clearTimeout(id);
-  }, [nav]);
+  }, [nav, loc.pathname]);
   return (
     <div className="onb-splash">
+      {/* Aurora background — four heavily-blurred colored blobs over a brand
+          purple base, recreating the Figma "Gradient" frame and its three
+          blue ellipses plus mint vector. Pure CSS, no extra assets. */}
+      <div className="onb-splash-aurora" aria-hidden>
+        <span className="onb-splash-blob onb-splash-blob--a" />
+        <span className="onb-splash-blob onb-splash-blob--b" />
+        <span className="onb-splash-blob onb-splash-blob--c" />
+        <span className="onb-splash-blob onb-splash-blob--mint" />
+      </div>
       <div className="onb-splash-center">
-        {/* Logo extracted from Figma (image fill on node 1:5983 — "Индустрия Лого00 1") */}
         <img src={loaderLogoImg} className="onb-splash-logo" alt="Индустрия" />
         <h2 className="onb-splash-title">От идеи<br />до гонорара</h2>
       </div>
