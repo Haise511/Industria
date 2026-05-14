@@ -4,7 +4,7 @@ import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextArea, TextInput } from '../components/Field';
 import { Flag } from '../components/Flag';
-import { ArrowDown2, InfoCircle } from 'iconsax-react';
+import { ArrowDown2, InfoCircle, TickCircle } from 'iconsax-react';
 import { haptic } from '../telegram';
 // Role illustrations extracted from the Figma file (image fills on nodes
 // 14:3313 / 14:3320 / 14:3327 / 14:3334) — these are not iconsax glyphs but
@@ -284,6 +284,59 @@ export function OnbLoading() {
       <div className="onb-splash-center">
         <img src={loaderLogoImg} className="onb-splash-logo" alt="Индустрия" />
         <h2 className="onb-splash-title">От идеи<br />до гонорара</h2>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * «Язык приложения» — settings variant of the language picker, reachable
+ * from Profile. Re-uses the same row visuals as the onboarding step but
+ * with a back-arrow TopBar, no progress bar, a check-mark on the active
+ * row, and a primary «Сохранить» CTA. Mirrors design-refs/Язык
+ * приложения.png.
+ */
+export function LanguageSettings() {
+  const nav = useNavigate();
+  const [selected, setSelected] = useState<'ru' | 'kg' | 'kz' | 'uz'>('ru');
+  const langs: Array<{ code: 'ru' | 'kg' | 'kz' | 'uz'; label: string }> = [
+    { code: 'ru', label: 'Русский' },
+    { code: 'kg', label: 'Кыргызча' },
+    { code: 'kz', label: 'Казакша' },
+    { code: 'uz', label: "O'zbekcha" },
+  ];
+  return (
+    <div className="screen">
+      <TopBar variant="back" />
+      <div className="onb-pad">
+        <div className="onb-head">
+          <h1 className="h1">Язык приложения</h1>
+        </div>
+        <div className="onb-list">
+          {langs.map((l) => (
+            <button
+              key={l.code}
+              className="onb-row"
+              onClick={() => { haptic('light'); setSelected(l.code); }}
+              type="button"
+            >
+              <span className="onb-flag" aria-hidden>
+                <Flag code={l.code} />
+              </span>
+              <span className="onb-row-label">{l.label}</span>
+              {selected === l.code && (
+                <span className="onb-row-check" aria-hidden>
+                  {/* Bold variant renders the filled circle silhouette;
+                      colored with --brand to match the Figma swatch. */}
+                  <TickCircle size={22} color="#4f62ec" variant="Bold" />
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="onb-cta">
+        <PrimaryButton onClick={() => nav(-1)}>Сохранить</PrimaryButton>
       </div>
     </div>
   );

@@ -10,8 +10,10 @@ import {
   Messages2,
   Location,
   ArrowRight2,
+  Global,
 } from 'iconsax-react';
 import { TopBar } from '../components/TopBar';
+import avatarMainImg from '../assets/figma/avatar_main.png';
 import './Profile.css';
 
 /*
@@ -48,6 +50,10 @@ export function Profile() {
     { icon: <Profile2User {...ICON} />, label: 'Услуги команды', to: '/team' },
     { icon: <VideoPlay {...ICON} />, label: 'Туториалы', hint: 'Обучающие видео на YouTube', to: '/tutorials' },
     { icon: <Document {...ICON} />, label: 'Правила использования сервиса', to: '/rules' },
+    // Figma «Профиль.png» добавляет пункт «Язык приложения» между правилами
+    // и поддержкой. Маршрут /settings/language пока ведёт на пустой экран —
+    // отдельный пункт сделаем при появлении конкретного флоу настроек.
+    { icon: <Global {...ICON} />, label: 'Язык приложения', to: '/settings/language' },
     { icon: <Messages2 {...ICON} />, label: 'Написать в поддержку', to: '/support' },
   ];
 
@@ -57,7 +63,11 @@ export function Profile() {
       <div className="prof-pad">
         <div className="prof-card">
           <div className="prof-head">
-            <div className="prof-ava">M</div>
+            {/* Figma: аватар отображает фото пользователя (нода 1:10093,
+                fill image). Используем основной аватар из assets/figma. */}
+            <div className="prof-ava">
+              <img src={avatarMainImg} alt="" />
+            </div>
             <div className="prof-head-text">
               <h2 className="prof-head-name">MacLovin</h2>
               <div className="prof-head-meta">

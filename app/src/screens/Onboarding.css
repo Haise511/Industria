@@ -93,6 +93,20 @@
 }
 .onb-flag svg { display: block; }
 
+/* Trailing check mark on the active language row in the settings variant.
+   Figma node renders a brand-filled tick-circle to the far right. */
+.onb-row-check {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand);
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.onb-row-check svg { color: var(--brand); }
+
 .onb-emoji {
   width: 40px;
   height: 40px;

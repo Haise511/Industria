@@ -52,6 +52,16 @@
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Figma: avatar carries an image fill (нода 1:10093). Crop to the circle
+   and fill the container so the photo doesn't squash. */
+.prof-ava img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .prof-head-text {
