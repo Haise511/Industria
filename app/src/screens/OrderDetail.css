@@ -56,10 +56,12 @@
   font-weight: 500;
 }
 
+/* Figma: section labels ("Описание") read as muted-soft, sitting outside
+   the card. 14/400, text-muted matches the visual weight in the PNG. */
 .detail-section-title {
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-quiet);
+  color: var(--text-muted);
   margin: 0 0 8px;
 }
 
@@ -105,9 +107,12 @@
   font-weight: 500;
 }
 
+/* Figma: price row matches other row sizes (14/500). The earlier 18/700
+   value was an over-correction — in the new design Прайс reads at the
+   same scale as the other grid cells, with weight 500. */
 .detail-price {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .detail-cta {
