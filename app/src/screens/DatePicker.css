@@ -1,47 +1,63 @@
+/*
+ * Date picker — Figma «Выберите дату» (sheet).
+ *   - calendar wrapped in surface-1 card, r=24, padding 16
+ *   - month label 16/600 + chevron-right to advance
+ *   - 7-column grid, cells 40x40, gap 0 (rows visually separated by line-height)
+ *   - range selection: pill background spanning consecutive selected days
+ *   - today: brand dot underneath the day number
+ *   - leading/trailing days dimmed (#5a5a5a)
+ *   - comment textarea below
+ */
+
 .dp {
   padding-bottom: 0;
 }
 
-.dp-top {
-  display: flex;
-  justify-content: space-between;
-  padding: 0;
-}
-
 .dp-pad {
   padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .dp-title {
-  margin-bottom: 24px;
+  margin: 0;
+}
+
+.dp-card {
+  background: var(--surface-1);
+  border-radius: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .dp-month {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  padding: 0 4px;
 }
 
 .dp-month-label {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
 }
 
 .dp-month-next {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .dp-week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 8px;
 }
 
 .dp-week-day {
@@ -49,17 +65,20 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text-quiet);
+  padding: 6px 0;
 }
 
 .dp-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  /* No column gap — range pill needs to visually connect adjacent days.
+     Vertical gap separates rows. */
+  row-gap: 6px;
 }
 
 .dp-cell {
+  position: relative;
   height: 40px;
-  border-radius: 12px;
   background: transparent;
   color: var(--text);
   font-size: 16px;
@@ -67,30 +86,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Default radius is square so we can overlay a continuous range pill. */
+  border-radius: 0;
 }
 
-.dp-cell:disabled,
-.dp-cell--mute {
-  color: #555;
+.dp-cell--mute,
+.dp-cell:disabled {
+  color: #5a5a5a;
   pointer-events: none;
 }
 
-.dp-cell.is-selected {
+/* Range — brand-filled pill. Endpoints get rounded corners, interior days
+   keep square corners so the pill reads as one continuous shape. */
+.dp-cell.is-in-range {
   background: var(--brand);
   color: #fff;
 }
 
-.dp-cell:not(.is-selected):not(:disabled):active {
+.dp-cell.is-range-start {
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+
+.dp-cell.is-range-end {
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+/* Single-day selection (start == end): full pill on its own. */
+.dp-cell.is-range-start.is-range-end {
+  border-radius: 999px;
+}
+
+/* Today indicator — small brand dot under the number when day is not
+   inside a selected range (range styling supersedes it visually). */
+.dp-cell.is-today:not(.is-in-range)::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+}
+
+.dp-cell:not(.is-in-range):not(:disabled):active {
   background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
 }
 
 .dp-comment {
-  margin-top: 24px;
-}
-
-.dp-comment .field-label {
-  display: block;
-  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .dp-cta {
