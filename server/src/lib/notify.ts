@@ -33,6 +33,18 @@ export const messages = {
   orderCreated: (orderNumber: number, authorName: string, description: string) =>
     `📋 Новый заказ #${orderNumber}\n\nОт: ${authorName}\n\n«${description.slice(0, 120)}»\n\nОткройте приложение для деталей.`,
 
+  orderDateToday: (orderDesc: string) =>
+    `📅 Сегодня день заказа.\n\nЗаявка: «${orderDesc.slice(0, 80)}...»\n\nНе забудьте подтвердить выполнение в приложении.`,
+
+  orderConfirmedByOther: (orderDesc: string) =>
+    `🔔 Другая сторона подтвердила выполнение заказа.\n\nЗаявка: «${orderDesc.slice(0, 80)}...»\n\nПодтвердите со своей стороны.`,
+
+  orderCompleted: (orderDesc: string) =>
+    `🎉 Заказ завершён.\n\nЗаявка: «${orderDesc.slice(0, 80)}...»\n\nОставьте отзыв в приложении.`,
+
+  orderCancelled: (orderDesc: string, reason: string) =>
+    `🚫 Заказ отменён.\n\nЗаявка: «${orderDesc.slice(0, 80)}...»\nПричина: ${reason}`,
+
   subscriptionExpiresSoon: (days: number) =>
     `⏳ Подписка истекает через ${days} ${pluralDays(days)}.\n\nПродлите чтобы не потерять доступ к заявкам.`,
 

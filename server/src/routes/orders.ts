@@ -3,6 +3,29 @@ import db from '../lib/db.js'
 import { notify, messages } from '../lib/notify.js'
 import type { ContractType, OrderMode, ResponseStatus } from '@prisma/client'
 
+// Демо-режим жизненного цикла заказа.
+// TODO (post-demo): cron-задача автозавершения через 72ч в awaiting_confirmation,
+// автоматический переход awaiting_date → today по наступлению даты (сейчас вычисляется на лету при принятии).
+
+const NON_TERMINAL_STATUSES = [
+  'open',
+  'awaiting_date',
+  'today',
+  'awaiting_confirmation',
+  'awaiting_rating',
+] as const
+
+// Проверяет, что дата заказа (формат YYYY-MM-DD или произвольная строка) — сегодня.
+function isToday(date: string | null | undefined): boolean {
+  if (!date) return false
+  const today = new Date()
+  const yyyy = today.getFullYear()
+  const mm = String(today.getMonth() + 1).padStart(2, '0')
+  const dd = String(today.getDate()).padStart(2, '0')
+  const todayIso = `${yyyy}-${mm}-${dd}`
+  return date.startsWith(todayIso)
+}
+
 export default async function orderRoutes(app: FastifyInstance) {
   // Лента заявок с Match Score
   app.get('/orders', { onRequest: [app.authenticate] }, async (req, reply) => {
@@ -122,6 +145,11 @@ export default async function orderRoutes(app: FastifyInstance) {
       update: { date: body.date, comment: body.comment, status: 'waiting' },
     })
 
+    // При первом отклике замораживаем редактирование заявки.
+    if (!order.editFrozen) {
+      await db.order.update({ where: { id: order.id }, data: { editFrozen: true } })
+    }
+
     return reply.status(201).send(response)
   })
 
@@ -191,11 +219,157 @@ export default async function orderRoutes(app: FastifyInstance) {
     })
 
     const desc = response.order.description
+
     if (status === 'accepted') {
+      // Закрываем остальные отклики и переводим заказ в нужный статус жизненного цикла.
+      const nextStatus = isToday(response.date ?? response.order.date) ? 'today' : 'awaiting_date'
+
+      await db.$transaction([
+        db.response.updateMany({
+          where: { orderId: response.orderId, id: { not: response.id }, status: 'waiting' },
+          data: { status: 'rejected' },
+        }),
+        db.order.update({
+          where: { id: response.orderId },
+          // Каст до any: новый enum OrderStatus ещё не сгенерирован Prisma Client локально,
+          // на Railway после prisma generate типы подхватятся.
+          data: {
+            status: nextStatus,
+            acceptedResponseId: response.id,
+            date: response.date ?? response.order.date,
+          } as never,
+        }),
+      ])
+
       notify(response.userId, messages.responseAccepted(desc)).catch(() => {})
+      if (nextStatus === 'today') {
+        notify(response.userId, messages.orderDateToday(desc)).catch(() => {})
+        notify(response.order.authorId, messages.orderDateToday(desc)).catch(() => {})
+      }
     } else {
       notify(response.userId, messages.responseRejected(desc)).catch(() => {})
     }
+
+    return reply.send(updated)
+  })
+
+  // ─── Жизненный цикл заказа ─────────────────────────────────────────────────
+
+  // Подтвердить выполнение (двустороннее). Доступно автору и исполнителю.
+  app.post('/orders/:id/confirm', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+
+    const order = await db.order.findUnique({
+      where: { id: Number(id) },
+      include: { responses: { where: { status: 'accepted' }, take: 1 } },
+    })
+    if (!order) return reply.status(404).send({ error: 'Not found' })
+
+    const executor = order.responses[0]
+    const isAuthor = order.authorId === userId
+    const isExecutor = executor?.userId === userId
+    if (!isAuthor && !isExecutor) return reply.status(403).send({ error: 'Forbidden' })
+
+    // Подтверждение допустимо только в статусах today / awaiting_confirmation.
+    if (order.status !== 'today' && order.status !== 'awaiting_confirmation') {
+      return reply.status(409).send({ error: 'Order is not ready for confirmation' })
+    }
+
+    const patch: Record<string, unknown> = {}
+    if (isAuthor) patch.confirmedByAuthor = true
+    if (isExecutor) patch.confirmedByExecutor = true
+
+    const bothConfirmed =
+      (isAuthor || order.confirmedByAuthor) && (isExecutor || order.confirmedByExecutor)
+
+    if (bothConfirmed) {
+      patch.status = 'awaiting_rating'
+      patch.confirmedAt = new Date()
+    } else {
+      patch.status = 'awaiting_confirmation'
+    }
+
+    const updated = await db.order.update({
+      where: { id: order.id },
+      data: patch as never,
+    })
+
+    // Уведомление другой стороне.
+    const otherUserId = isAuthor ? executor?.userId : order.authorId
+    if (otherUserId) {
+      if (bothConfirmed) {
+        notify(otherUserId, messages.orderCompleted(order.description)).catch(() => {})
+        // И тому, кто только что нажал — тоже.
+        notify(userId, messages.orderCompleted(order.description)).catch(() => {})
+      } else {
+        notify(otherUserId, messages.orderConfirmedByOther(order.description)).catch(() => {})
+      }
+    }
+
+    return reply.send(updated)
+  })
+
+  // Отмена заказа.
+  app.post('/orders/:id/cancel', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+    const body = req.body as { reason?: string }
+    const reason = (body.reason ?? '').trim()
+    if (!reason) return reply.status(400).send({ error: 'reason required' })
+
+    const order = await db.order.findUnique({
+      where: { id: Number(id) },
+      include: { responses: { where: { status: 'accepted' }, take: 1 } },
+    })
+    if (!order) return reply.status(404).send({ error: 'Not found' })
+
+    const executor = order.responses[0]
+    const isAuthor = order.authorId === userId
+    const isExecutor = executor?.userId === userId
+    if (!isAuthor && !isExecutor) return reply.status(403).send({ error: 'Forbidden' })
+
+    if (!(NON_TERMINAL_STATUSES as readonly string[]).includes(order.status)) {
+      return reply.status(409).send({ error: 'Order already finalized' })
+    }
+
+    const updated = await db.order.update({
+      where: { id: order.id },
+      data: { status: 'cancelled', cancelReason: reason } as never,
+    })
+
+    const otherUserId = isAuthor ? executor?.userId : order.authorId
+    if (otherUserId) {
+      notify(otherUserId, messages.orderCancelled(order.description, reason)).catch(() => {})
+    }
+
+    return reply.send(updated)
+  })
+
+  // Завершить заказ (переход awaiting_rating → completed). В демо вызывается из заглушки «Оценить».
+  app.post('/orders/:id/complete', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+
+    const order = await db.order.findUnique({
+      where: { id: Number(id) },
+      include: { responses: { where: { status: 'accepted' }, take: 1 } },
+    })
+    if (!order) return reply.status(404).send({ error: 'Not found' })
+
+    const executor = order.responses[0]
+    const isAuthor = order.authorId === userId
+    const isExecutor = executor?.userId === userId
+    if (!isAuthor && !isExecutor) return reply.status(403).send({ error: 'Forbidden' })
+
+    if (order.status !== 'awaiting_rating') {
+      return reply.status(409).send({ error: 'Order is not in awaiting_rating' })
+    }
+
+    const updated = await db.order.update({
+      where: { id: order.id },
+      data: { status: 'completed' } as never,
+    })
 
     return reply.send(updated)
   })
