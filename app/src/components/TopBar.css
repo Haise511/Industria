@@ -9,6 +9,15 @@
   z-index: 10;
 }
 
+/* Empty topbar — Telegram handles close/back natively, we just keep a small
+   spacer so content doesn't butt against the safe-area edge. */
+.topbar--empty {
+  height: 8px;
+  padding: 0;
+}
+
+.topbar-spacer { flex: 1 1 auto; }
+
 .topbar-pill {
   display: inline-flex;
   align-items: center;

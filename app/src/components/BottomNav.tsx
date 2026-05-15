@@ -48,7 +48,7 @@ export function BottomNav() {
               className={`bnav-tab ${active ? 'is-active' : ''}`}
               onClick={() => haptic('light')}
             >
-              <span className="bnav-icon">{render(28)}</span>
+              <span className="bnav-icon">{render(24)}</span>
               <span className="bnav-label">{label}</span>
             </NavLink>
           );
