@@ -5,7 +5,9 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { TextArea, TextInput } from '../components/Field';
 import { Flag } from '../components/Flag';
 import { ArrowDown2, InfoCircle, TickCircle } from 'iconsax-react';
-import { haptic } from '../telegram';
+import { haptic, getTg } from '../telegram';
+import { api, setToken } from '../api';
+import { useAuth } from '../context/AuthContext';
 // Role illustrations extracted from the Figma file (image fills on nodes
 // 14:3313 / 14:3320 / 14:3327 / 14:3334) — these are not iconsax glyphs but
 // custom isometric illustrations baked into the design.
@@ -30,7 +32,7 @@ export function OnbLanguage() {
   return (
     <div className="screen">
       <TopBar variant="close" onLeft={() => nav('/')} />
-      <Progress step={1} total={4} /* language picker, see Figma 1:5746 */ />
+      <Progress step={1} total={4} />
       <div className="onb-pad">
         <div className="onb-head">
           <h1 className="h1">Выберите язык приложения</h1>
@@ -43,12 +45,10 @@ export function OnbLanguage() {
               className="onb-row"
               onClick={() => {
                 haptic('light');
-                nav('/onboarding/role');
+                nav('/onboarding/role', { state: { language: l.code } });
               }}
               type="button"
             >
-              {/* Flag is a 32x32 SVG icon, matching the Figma "Flag Pack"
-                  instance dimensions. */}
               <span className="onb-flag" aria-hidden>
                 <Flag code={l.code} />
               </span>
@@ -66,6 +66,8 @@ export function OnbLanguage() {
  *  isometric art). */
 export function OnbRole() {
   const nav = useNavigate();
+  const loc = useLocation();
+  const prev = (loc.state ?? {}) as Record<string, string>;
   const roles = [
     { id: 'artist', label: 'Артист', desc: 'Музыкант, певец, DJ, группа', img: roleArtistImg },
     { id: 'studio', label: 'Студия', desc: 'Пространство, оснащенное оборудованием для качественной записи и мастеринга звука', img: roleStudioImg },
@@ -83,7 +85,10 @@ export function OnbRole() {
         </div>
         <div className="onb-list">
           {roles.map((r) => (
-            <button key={r.id} className="onb-row onb-row--col" onClick={() => { haptic('light'); nav('/onboarding/basic'); }}>
+            <button key={r.id} className="onb-row onb-row--col" onClick={() => {
+              haptic('light');
+              nav('/onboarding/basic', { state: { ...prev, role: r.id } });
+            }}>
               <span className="onb-role-illu" aria-hidden>
                 <img src={r.img} alt="" />
               </span>
@@ -105,6 +110,8 @@ export function OnbRole() {
  */
 export function OnbBasicData() {
   const nav = useNavigate();
+  const loc = useLocation();
+  const prev = (loc.state ?? {}) as Record<string, string>;
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [city, setCity] = useState('Бишкек');
@@ -194,7 +201,7 @@ export function OnbBasicData() {
         </div>
 
         <div className="onb-cta">
-          <PrimaryButton onClick={() => nav('/onboarding/profile')}>Продолжить</PrimaryButton>
+          <PrimaryButton onClick={() => nav('/onboarding/profile', { state: { ...prev, name, username, city, mode } })}>Продолжить</PrimaryButton>
         </div>
       </div>
     </div>
@@ -204,6 +211,34 @@ export function OnbBasicData() {
 /** Step 4: profile fill. */
 export function OnbProfile() {
   const nav = useNavigate();
+  const loc = useLocation();
+  const { setUser } = useAuth();
+  const prev = (loc.state ?? {}) as Record<string, string>;
+  const [bio, setBio] = useState('');
+  const [contract, setContract] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    haptic('light');
+    setSaving(true);
+    try {
+      const updated = await api.updateProfile({
+        name: prev.name,
+        role: prev.role as 'artist' | 'customer' | 'studio' | 'composer',
+        city: prev.city,
+        language: prev.language,
+        bio: bio || undefined,
+        contract,
+      });
+      setUser(updated);
+      nav('/onboarding/loading', { replace: true });
+    } catch {
+      nav('/onboarding/loading', { replace: true });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="screen">
       <TopBar variant="close" onLeft={() => nav('/')} />
@@ -229,15 +264,15 @@ export function OnbProfile() {
           <div>
             <label className="field-label">О себе (необязательно)</label>
             <div className="field-box">
-              <TextArea placeholder="Немного о своем опыте" maxLength={280} />
-              <span className="field-counter">0/280</span>
+              <TextArea placeholder="Немного о своем опыте" maxLength={280} value={bio} onChange={(e) => setBio(e.target.value)} />
+              <span className="field-counter">{bio.length}/280</span>
             </div>
           </div>
 
           <div>
             <label className="field-label">Договор</label>
-            <button className="onb-check">
-              <span className="onb-check-circle" />
+            <button className="onb-check" onClick={() => { haptic('light'); setContract(c => !c); }}>
+              <span className={`onb-check-circle${contract ? ' is-checked' : ''}`} />
               <span>Готов работать по договору</span>
             </button>
             <div className="onb-info">
@@ -247,7 +282,9 @@ export function OnbProfile() {
         </div>
 
         <div className="onb-cta">
-          <PrimaryButton onClick={() => nav('/onboarding/loading')}>Продолжить</PrimaryButton>
+          <PrimaryButton onClick={handleSave} disabled={saving}>
+            {saving ? 'Сохранение...' : 'Продолжить'}
+          </PrimaryButton>
         </div>
       </div>
     </div>
@@ -265,11 +302,37 @@ export function OnbProfile() {
 export function OnbLoading() {
   const nav = useNavigate();
   const loc = useLocation();
+  const { setAuth } = useAuth();
+
   useEffect(() => {
-    const next = loc.pathname === '/onboarding/loading' ? '/feed' : '/onboarding/language';
-    const id = setTimeout(() => nav(next, { replace: true }), 1500);
-    return () => clearTimeout(id);
-  }, [nav, loc.pathname]);
+    // After onboarding completes — just go to feed.
+    if (loc.pathname === '/onboarding/loading') {
+      const id = setTimeout(() => nav('/feed', { replace: true }), 800);
+      return () => clearTimeout(id);
+    }
+
+    // App entry — authenticate with Telegram and route accordingly.
+    const initData = getTg()?.initData ?? '';
+    if (!initData) {
+      // Dev mode: no Telegram context, skip auth and go straight to onboarding.
+      const id = setTimeout(() => nav('/onboarding/language', { replace: true }), 1500);
+      return () => clearTimeout(id);
+    }
+
+    let cancelled = false;
+    api.auth(initData)
+      .then(({ token, user, isNew }) => {
+        if (cancelled) return;
+        setToken(token);
+        setAuth(user, token);
+        nav(isNew ? '/onboarding/language' : '/feed', { replace: true });
+      })
+      .catch(() => {
+        if (!cancelled) nav('/onboarding/language', { replace: true });
+      });
+
+    return () => { cancelled = true; };
+  }, [nav, loc.pathname, setAuth]);
   return (
     <div className="onb-splash">
       {/* Aurora background — four heavily-blurred colored blobs over a brand

@@ -1,18 +1,36 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Notification, Filter, ArrangeVertical, Add } from 'iconsax-react';
 import { TopBar } from '../components/TopBar';
-import { OrderCard } from '../components/OrderCard';
-import { feedOrders } from '../data/mock';
+import { OrderCard, type Order } from '../components/OrderCard';
 import { haptic } from '../telegram';
+import { api, toOrder } from '../api';
 import './Feed.css';
 
 const CHIPS = ['Все', 'Заказчики', 'Студии', 'Композиторы', 'Артисты'];
+const CHIP_ROLE: Record<string, string | undefined> = {
+  'Заказчики': 'customer',
+  'Студии': 'studio',
+  'Композиторы': 'composer',
+  'Артисты': 'artist',
+};
 
 export function Feed() {
   const nav = useNavigate();
   const [mode, setMode] = useState<'normal' | 'toi'>('normal');
   const [chip, setChip] = useState('Все');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const role = CHIP_ROLE[chip];
+    api.getOrders({ mode, ...(role ? { role } : {}) })
+      .then(data => setOrders(data.map(o => toOrder(o))))
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
+  }, [mode, chip]);
+
   return (
     <div className="screen feed">
       <TopBar />
@@ -33,7 +51,6 @@ export function Feed() {
             </button>
           </div>
           <button className="feed-bell" onClick={() => nav('/notifications')} aria-label="Уведомления">
-            {/* Figma: vuesax/bold/notification — bell with unread dot */}
             <Notification size={20} color="#fff" variant="Bold" />
             <span className="feed-bell-dot" />
           </button>
@@ -59,7 +76,9 @@ export function Feed() {
       </div>
 
       <div className="feed-list">
-        {feedOrders.map((o) => (
+        {loading && <p className="feed-empty">Загрузка...</p>}
+        {!loading && orders.length === 0 && <p className="feed-empty">Нет заявок</p>}
+        {!loading && orders.map((o) => (
           <OrderCard key={o.id} order={o} onClick={() => nav(`/feed/${o.id}`)} />
         ))}
       </div>

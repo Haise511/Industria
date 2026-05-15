@@ -13,22 +13,17 @@ import {
   Global,
 } from 'iconsax-react';
 import { TopBar } from '../components/TopBar';
+import { useAuth } from '../context/AuthContext';
 import avatarMainImg from '../assets/figma/avatar_main.png';
 import './Profile.css';
 
-/*
- * Profile screen layout (Figma 1:10087):
- *   - Some menu rows have a sub-hint UNDER the label ("Подписка / Активна до...")
- *   - Some have the hint INLINE next to the label ("Отзывы 4.8")
- *   - Some have only the label ("Заказать верификацию")
- * `hintInline` differentiates the inline-after-label case from the
- * stacked sub-hint case.
- *
- * All glyphs come from iconsax-react (Bold variant) — they map 1:1 to the
- * vuesax/bold instances in Figma:
- *   card -> Card, refresh -> Refresh, profile-2user -> Profile2User,
- *   video-play -> VideoPlay, document -> Document, message-2 -> Messages2.
- */
+const ROLE_LABEL: Record<string, string> = {
+  artist: 'Артист',
+  customer: 'Заказчик',
+  studio: 'Студия',
+  composer: 'Композитор',
+};
+
 interface MenuItem {
   icon: JSX.Element;
   label: string;
@@ -42,17 +37,22 @@ const ICON = { size: 20, color: '#fff', variant: 'Bold' as const };
 
 export function Profile() {
   const nav = useNavigate();
+  const { user } = useAuth();
+
+  const name = user?.name ?? '—';
+  const role = user?.role ? ROLE_LABEL[user.role] : '—';
+  const city = user?.city ?? null;
+  const rating = user?.rating ?? 0;
+  const avatar = user?.avatarUrl ?? null;
+
   const items: MenuItem[] = [
     { icon: <Card {...ICON} />, label: 'Подписка', hint: 'Активна до 15 мая 2026', hintColor: 'var(--success)', to: '/subscription' },
-    { icon: <Star1 {...ICON} />, label: 'Отзывы', hint: '4.8', hintInline: true, to: '/reviews' },
+    { icon: <Star1 {...ICON} />, label: 'Отзывы', hint: rating > 0 ? rating.toFixed(1) : '—', hintInline: true, to: '/reviews' },
     { icon: <ShieldTick {...ICON} />, label: 'Заказать верификацию', to: '/verification' },
     { icon: <Refresh {...ICON} />, label: 'История заказов', to: '/history' },
     { icon: <Profile2User {...ICON} />, label: 'Услуги команды', to: '/team' },
     { icon: <VideoPlay {...ICON} />, label: 'Туториалы', hint: 'Обучающие видео на YouTube', to: '/tutorials' },
     { icon: <Document {...ICON} />, label: 'Правила использования сервиса', to: '/rules' },
-    // Figma «Профиль.png» добавляет пункт «Язык приложения» между правилами
-    // и поддержкой. Маршрут /settings/language пока ведёт на пустой экран —
-    // отдельный пункт сделаем при появлении конкретного флоу настроек.
     { icon: <Global {...ICON} />, label: 'Язык приложения', to: '/settings/language' },
     { icon: <Messages2 {...ICON} />, label: 'Написать в поддержку', to: '/support' },
   ];
@@ -63,23 +63,25 @@ export function Profile() {
       <div className="prof-pad">
         <div className="prof-card">
           <div className="prof-head">
-            {/* Figma: аватар отображает фото пользователя (нода 1:10093,
-                fill image). Используем основной аватар из assets/figma. */}
             <div className="prof-ava">
-              <img src={avatarMainImg} alt="" />
+              <img src={avatar ?? avatarMainImg} alt="" />
             </div>
             <div className="prof-head-text">
-              <h2 className="prof-head-name">MacLovin</h2>
+              <h2 className="prof-head-name">{name}</h2>
               <div className="prof-head-meta">
-                <span className="prof-role">Артист</span>
-                <span className="prof-meta-loc">
-                  <Location size={12} color="#fff" variant="Bold" />
-                  <span>Бишкек</span>
-                </span>
-                <span className="prof-meta-rating">
-                  <Star1 size={14} color="#fbbe25" variant="Bold" />
-                  <span>4.8</span>
-                </span>
+                <span className="prof-role">{role}</span>
+                {city && (
+                  <span className="prof-meta-loc">
+                    <Location size={12} color="#fff" variant="Bold" />
+                    <span>{city}</span>
+                  </span>
+                )}
+                {rating > 0 && (
+                  <span className="prof-meta-rating">
+                    <Star1 size={14} color="#fbbe25" variant="Bold" />
+                    <span>{rating.toFixed(1)}</span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
