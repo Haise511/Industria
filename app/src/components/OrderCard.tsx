@@ -3,6 +3,15 @@ import './OrderCard.css';
 
 export type OrderRole = 'artist' | 'customer' | 'studio' | 'composer';
 export type OrderStatus = 'waiting' | 'accepted' | 'rejected' | null;
+export type OrderLifecycle =
+  | 'open'
+  | 'awaiting_date'
+  | 'today'
+  | 'awaiting_confirmation'
+  | 'awaiting_rating'
+  | 'completed'
+  | 'cancelled'
+  | 'closed';
 
 export interface Order {
   id: string;
@@ -16,6 +25,7 @@ export interface Order {
   authorRating?: number;
   authorAvatar?: string;
   status?: OrderStatus;
+  lifecycle?: OrderLifecycle;
   verified?: boolean;
   score?: number;
 }

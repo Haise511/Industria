@@ -44,15 +44,32 @@ export interface ApiUser {
   language: string
 }
 
+export type OrderLifecycleStatus =
+  | 'open'
+  | 'awaiting_date'
+  | 'today'
+  | 'awaiting_confirmation'
+  | 'awaiting_rating'
+  | 'completed'
+  | 'cancelled'
+  | 'closed'
+
 export interface ApiOrder {
   id: number
+  orderNumber?: number
   price: number
   description: string
   city: string | null
   date: string | null
   contract: 'contract' | 'cash'
   mode: 'normal' | 'toi'
-  status: 'open' | 'closed'
+  status: OrderLifecycleStatus
+  editFrozen?: boolean
+  cancelReason?: string | null
+  confirmedAt?: string | null
+  confirmedByAuthor?: boolean
+  confirmedByExecutor?: boolean
+  acceptedResponseId?: number | null
   score?: number
   author: {
     id: number
@@ -108,6 +125,7 @@ export function toOrder(o: ApiOrder, status?: Order['status']): Order {
     authorAvatar: o.author.avatarUrl ?? undefined,
     verified: o.author.verified,
     status: status ?? null,
+    lifecycle: o.status,
     score: o.score,
   }
 }
@@ -177,6 +195,21 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     })
+  },
+
+  confirmOrder(orderId: number) {
+    return request<ApiOrder>(`/orders/${orderId}/confirm`, { method: 'POST' })
+  },
+
+  cancelOrder(orderId: number, reason: string) {
+    return request<ApiOrder>(`/orders/${orderId}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+  },
+
+  completeOrder(orderId: number) {
+    return request<ApiOrder>(`/orders/${orderId}/complete`, { method: 'POST' })
   },
 
   getNotifications() {
