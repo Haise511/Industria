@@ -1,0 +1,105 @@
+.cmodal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  animation: cmodal-fade 160ms ease;
+}
+
+@keyframes cmodal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cmodal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-elev, #1c1c1e);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: cmodal-slide 220ms ease;
+}
+
+@keyframes cmodal-slide {
+  from { transform: translateY(40px); }
+  to { transform: translateY(0); }
+}
+
+.cmodal-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text, #fff);
+  margin: 0 0 4px;
+}
+
+.cmodal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cmodal-option {
+  text-align: left;
+  background: var(--surface, #2c2c2e);
+  color: var(--text, #fff);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.cmodal-option.is-active {
+  border-color: var(--accent, #fff);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cmodal-input {
+  width: 100%;
+  background: var(--surface, #2c2c2e);
+  color: var(--text, #fff);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: none;
+  min-height: 72px;
+}
+
+.cmodal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cmodal-btn {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cmodal-btn--ghost {
+  background: var(--surface, #2c2c2e);
+  color: var(--text, #fff);
+}
+
+.cmodal-btn--danger {
+  background: #ff5356;
+  color: #fff;
+}
+
+.cmodal-btn--danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
