@@ -65,13 +65,17 @@ Industria/
 
 ```prisma
 User         — telegramId, name, role, city, rating, verified, contract, language
-Order        — authorId, price, description, city, date, contract, mode, status(open|closed)
+Order        — authorId, price, description, city, date, contract, mode, status,
+               orderNumber, editFrozen, cancelReason, confirmedAt,
+               confirmedByAuthor, confirmedByExecutor, acceptedResponseId
 Response     — orderId, userId, date, comment, status(waiting|accepted|rejected)
 Notification — userId, text, read
 ```
 
+**Order.status (enum):** `open | awaiting_date | today | awaiting_confirmation | awaiting_rating | completed | cancelled | closed`.
+`closed` оставлен для обратной совместимости со старыми записями.
+
 **Предстоит расширить** (см. раздел «Roadmap»):
-- `Order` → добавить `orderNumber`, `editFrozen`, `cancelReason`, `confirmedAt`
 - `Response` → добавить `withdrawnAt`
 - `Review` — новая таблица (userId, targetId, orderId, stars, text)
 - `Subscription` — userId, plan, expiresAt, trialUsed
@@ -93,7 +97,10 @@ Notification — userId, text, read
 | GET | /orders/:id | Детали заявки |
 | POST | /orders/:id/respond | Откликнуться |
 | GET | /orders/:id/responses | Отклики на мою заявку |
-| PATCH | /responses/:id | Принять / отклонить отклик |
+| PATCH | /responses/:id | Принять / отклонить отклик (принятие → awaiting_date/today, остальные отклики авто-отклоняются) |
+| POST | /orders/:id/confirm | Двустороннее подтверждение выполнения → awaiting_rating |
+| POST | /orders/:id/cancel | Отмена заказа с причиной (любой не-терминальный статус) |
+| POST | /orders/:id/complete | Финал awaiting_rating → completed (демо-заглушка под отзывы) |
 | GET | /notifications | Список уведомлений |
 | PATCH | /notifications/read | Пометить прочитанными |
 
@@ -158,6 +165,7 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 - **Telegram-бот** (grammy): /start с кнопкой WebApp, /help, webhook на Railway
 - notify(userId, text): пишет в БД + шлёт в Telegram
 - Диагностика бота: GET /health/bot, GET /health/bot/setup
+- **Жизненный цикл заказа (демо-режим)**: принятие отклика → awaiting_date/today → confirm (двустороннее) → awaiting_rating → complete | cancel; editFrozen при первом отклике; модалка отмены с причинами; экраны Active/History фильтруют по lifecycle. Без cron 72h автозавершения — для прода добавить отдельной задачей.
 
 ---
 
@@ -169,7 +177,7 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 |---|---|---|
 | **Telegram-бот** | ✅ Готово | /start, webhook, уведомления при принятии/отклонении отклика |
 | **Подписка** | ⬜ Pending | 30-45 дней бесплатно → триал 14д для новых. Студии/композиторы — бесплатно навсегда. Без подписки: серая лента, нельзя откликаться/создавать |
-| **Жизненный цикл заказа** | ⬜ Pending | Состояния: ожидает дату → сегодня → ожидает подтверждения → оцените → завершён/отменён. Двустороннее подтверждение, автозавершение через 72ч |
+| **Жизненный цикл заказа** | ✅ Готово (демо, без cron) | Состояния awaiting_date→today→awaiting_confirmation→awaiting_rating→completed/cancelled. Двустороннее подтверждение. Автозавершение 72ч пока не реализовано (TODO в коде). |
 | **Кыргызский язык** | ⬜ Pending | Перевод всего интерфейса, переключение в реальном времени |
 | **Аватар** | ⬜ Pending | Загрузка фото (через Telegram bot file_id или Cloudflare R2) |
 
