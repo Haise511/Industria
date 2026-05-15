@@ -19,6 +19,18 @@ import { Verification } from './screens/Verification';
 /** Top-level paths that should display the bottom nav. */
 const TAB_PATHS = ['/feed', '/orders/my', '/responses', '/active', '/profile'];
 
+/** Routes that render as bottom-sheet overlays — value is the background
+ *  component to mount underneath so the live (blurred) screen shows through
+ *  the sheet backdrop. Mapping mirrors the Figma design context. */
+const SHEET_BG: Record<string, 'feed' | 'notifications'> = {
+  '/create':          'feed',
+  '/create/date':     'feed',
+  '/create/confirm':  'feed',
+  '/respond/date':    'feed',
+  '/respond/confirm': 'feed',
+  '/verification':    'notifications',
+};
+
 export default function App() {
   const loc = useLocation();
   const nav = useNavigate();
@@ -45,9 +57,16 @@ export default function App() {
   }, [loc.pathname, nav]);
 
   const showTabs = TAB_PATHS.some((p) => loc.pathname.startsWith(p));
+  const sheetBg = SHEET_BG[loc.pathname];
 
   return (
     <>
+      {sheetBg && (
+        <div className="sheet-bg" aria-hidden>
+          {sheetBg === 'feed' && <Feed />}
+          {sheetBg === 'notifications' && <Notifications />}
+        </div>
+      )}
       <Routes>
         {/* Onboarding flow — Loading is the app entry point. The logo splash
             auto-advances to /onboarding/language after ~1.5s, matching the

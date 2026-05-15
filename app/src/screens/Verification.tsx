@@ -1,27 +1,28 @@
 import { useNavigate } from 'react-router-dom';
-import { TopBar } from '../components/TopBar';
+import { BottomSheetShell } from '../components/BottomSheetShell';
 import { PrimaryButton } from '../components/PrimaryButton';
 import './Verification.css';
 
 /**
- * "Верификация" — sheet-style modal that appears over the notifications
- * screen in Figma. We render it as a full screen here for simplicity.
+ * "Верификация" — bottom-sheet modal. In Figma it sits over the notifications
+ * screen, so /verification mounts Notifications as its background layer
+ * (configured in App.tsx via SHEET_BG).
  */
 export function Verification() {
   const nav = useNavigate();
   return (
-    <div className="screen vrf">
-      <TopBar variant="close" />
-      <div className="vrf-pad">
-        <h1 className="h1">Верификация</h1>
-        <p className="vrf-text muted">
-          Верификация помогает нам убедиться, что это действительно вы, и защитит ваш аккаунт. Наш менеджер свяжется с вами в течение 72 часов,
-          чтобы обсудить детали и завершить процесс
-        </p>
-      </div>
-      <div className="vrf-cta">
+    <BottomSheetShell
+      title="Верификация"
+      closeTo="/notifications"
+      cta={
         <PrimaryButton onClick={() => nav(-1)}>Заказать верификацию</PrimaryButton>
-      </div>
-    </div>
+      }
+    >
+      <p className="vrf-text">
+        Верификация помогает нам убедиться, что это действительно вы, и защитит
+        ваш аккаунт. Наш менеджер свяжется с вами в течение 72 часов, чтобы
+        обсудить детали и завершить процесс.
+      </p>
+    </BottomSheetShell>
   );
 }

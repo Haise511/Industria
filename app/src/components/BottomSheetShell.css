@@ -1,0 +1,118 @@
+/*
+ * Bottom sheet shell — full-viewport overlay anchored to bottom edge.
+ *   - dark + blurred backdrop above the sheet (whatever app is behind shows
+ *     through diffused). Dismisses on tap.
+ *   - sheet 88vh, rounded top, fixed pill row at top (Назад / Закрыть)
+ *   - title 28/700 below pills
+ *   - body scrolls if overflow
+ *   - cta sticky bottom
+ */
+
+.bsheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  animation: bsheet-fade 0.18s ease-out;
+}
+
+/* Exit animations — set when user dismisses (close pill, backdrop tap, ESC).
+   Backdrop fades out, sheet slides down; then the parent unmounts the route. */
+.bsheet-root.is-closing {
+  animation: bsheet-fade-out 0.22s ease-in forwards;
+}
+.bsheet-root.is-closing .bsheet {
+  animation: bsheet-slide-out 0.22s cubic-bezier(.42, 0, .58, 1) forwards;
+}
+
+@keyframes bsheet-fade {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+@keyframes bsheet-fade-out {
+  from { opacity: 1 }
+  to   { opacity: 0 }
+}
+@keyframes bsheet-slide-out {
+  from { transform: translateY(0) }
+  to   { transform: translateY(100%) }
+}
+
+.bsheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.bsheet {
+  position: relative;
+  width: 100%;
+  max-width: var(--frame-w);
+  margin: 0 auto;
+  height: 88vh;
+  background: var(--bg);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 16px 16px calc(var(--safe-bottom) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: bsheet-slide 0.24s cubic-bezier(.22, .94, .42, 1);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes bsheet-slide {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0) }
+}
+
+.bsheet-pills {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bsheet-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 32px;
+  background: var(--surface-pill);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+}
+.bsheet-pill:active { opacity: 0.7 }
+
+.bsheet-title {
+  font-family: var(--font);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 4px 0 0;
+}
+
+.bsheet-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Hide native scrollbar on the sheet body */
+  scrollbar-width: none;
+}
+.bsheet-body::-webkit-scrollbar { display: none }
+
+.bsheet-cta {
+  margin-top: 8px;
+}

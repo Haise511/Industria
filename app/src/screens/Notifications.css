@@ -9,22 +9,27 @@
  */
 
 .notif-pad {
-  padding: 0 16px;
+  padding: 32px 16px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .notif-title {
-  margin: 4px 0 24px;
+  margin: 0;
 }
 
 .notif-group {
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .notif-section {
   font-size: 14px;
   font-weight: 400;
   color: var(--text-quiet);
-  margin: 0 0 8px;
+  margin: 0;
   padding-left: 4px;
 }
 

@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { TopBar } from '../components/TopBar';
+import { BottomSheetShell } from '../components/BottomSheetShell';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { api } from '../api';
 import { haptic } from '../telegram';
@@ -56,33 +56,29 @@ export function Confirm({ ctaLabel = 'Отправить отклик', next = '
   }
 
   return (
-    <div className="screen cf">
-      <TopBar variant="back" />
-      <div className="cf-pad">
-        <h1 className="h1 cf-title">Проверьте данные</h1>
-
-        <section className="cf-section">
-          <h3 className="cf-section-title">Описание</h3>
-          <p className="cf-text">{description}</p>
-        </section>
-
-        <div className="cf-card">
-          {isCreateFlow && price !== undefined && (
-            <Row label="Прайс" value={`${price.toLocaleString('ru-RU')} сом`} />
-          )}
-          <Row label="Город" value={city} />
-          <Row label="Дата" value={date} />
-          <Row label="Режим" value={mode} />
-          {comment && <Row label="Комментарий" value={comment} />}
-        </div>
-      </div>
-
-      <div className="cf-cta">
+    <BottomSheetShell
+      title="Проверьте данные"
+      cta={
         <PrimaryButton onClick={handleSubmit} disabled={loading}>
           {loading ? 'Отправка...' : ctaLabel}
         </PrimaryButton>
+      }
+    >
+      <section className="cf-section">
+        <h3 className="cf-section-title">Описание</h3>
+        <p className="cf-text">{description}</p>
+      </section>
+
+      <div className="cf-card">
+        {isCreateFlow && price !== undefined && (
+          <Row label="Прайс" value={`${price.toLocaleString('ru-RU')} сом`} />
+        )}
+        <Row label="Город" value={city} />
+        <Row label="Дата" value={date} />
+        <Row label="Режим" value={mode} />
+        {comment && <Row label="Комментарий" value={comment} />}
       </div>
-    </div>
+    </BottomSheetShell>
   );
 }
 

@@ -1,0 +1,81 @@
+/*
+ * Bottom sheet for notification details — Figma "Уведомления / детали".
+ *   - dimmed/blurred backdrop covers viewport
+ *   - sheet pinned to bottom, rounded top corners (24px)
+ *   - «Закрыть» pill at top right
+ *   - title 28/700, body 16/400 lh=22 muted
+ *   - «Подробнее» CTA at bottom
+ */
+
+.nsheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  animation: nsheet-fade 0.18s ease-out;
+}
+
+@keyframes nsheet-fade {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+.nsheet {
+  width: 100%;
+  max-width: var(--frame-w);
+  background: var(--bg);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 16px 16px calc(var(--safe-bottom) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: nsheet-slide 0.22s cubic-bezier(.22,.94,.42,1);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes nsheet-slide {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0) }
+}
+
+.nsheet-close {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 32px;
+  background: var(--surface-pill);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+}
+.nsheet-close:active { opacity: 0.7 }
+
+.nsheet-title {
+  margin: 4px 0 0;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nsheet-body {
+  margin: 0;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.nsheet-cta {
+  margin-top: 8px;
+}

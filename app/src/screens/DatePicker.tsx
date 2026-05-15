@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { TopBar } from '../components/TopBar';
+import { BottomSheetShell } from '../components/BottomSheetShell';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextArea } from '../components/Field';
 import { ArrowLeft2, ArrowRight2 } from 'iconsax-react';
@@ -80,9 +80,17 @@ export function DatePicker() {
 
   function tap(day: number) {
     haptic('light');
-    if (end === null || day < start) setRange([day, null]);
-    else if (day === start) setRange([day, day]);
-    else setRange([start, day]);
+    // First tap (no end yet): if later — set as range end, if earlier — new start,
+    // if same — collapse to single day. Subsequent tap (end already set) — reset.
+    if (end !== null) {
+      setRange([day, null]);
+    } else if (day > start) {
+      setRange([start, day]);
+    } else if (day < start) {
+      setRange([day, null]);
+    } else {
+      setRange([day, day]);
+    }
   }
 
   function cellClass(day: number, muted: boolean): string {
@@ -105,40 +113,44 @@ export function DatePicker() {
   }
 
   return (
-    <div className="screen dp">
-      <TopBar variant="back" />
-      <div className="dp-pad">
-        <h1 className="h1 dp-title">Выберите дату</h1>
-
-        <div className="dp-card">
-          <div className="dp-month">
-            <button className="dp-month-prev" onClick={prevMonth} aria-label="Предыдущий месяц">
-              <ArrowLeft2 size={20} color="#fff" variant="Linear" />
-            </button>
-            <span className="dp-month-label">{MONTHS_RU[month]} {year}</span>
+    <BottomSheetShell
+      title="Выберите дату"
+      cta={<PrimaryButton onClick={handleNext}>Далее</PrimaryButton>}
+    >
+      <div className="dp-card">
+        <div className="dp-month">
+          <span className="dp-month-label">{MONTHS_RU[month]} {year}</span>
+          <div className="dp-month-nav">
+            {!isCurrentMonth && (
+              <button className="dp-month-prev" onClick={prevMonth} aria-label="Предыдущий месяц">
+                <ArrowLeft2 size={20} color="#fff" variant="Linear" />
+              </button>
+            )}
             <button className="dp-month-next" onClick={nextMonth} aria-label="Следующий месяц">
               <ArrowRight2 size={20} color="#fff" variant="Linear" />
             </button>
           </div>
-
-          <div className="dp-week">
-            {DAYS_RU.map((d) => <span key={d} className="dp-week-day">{d}</span>)}
-          </div>
-
-          <div className="dp-grid">
-            {cells.map((c, i) => (
-              <button
-                key={i}
-                className={cellClass(c.day, c.muted)}
-                onClick={() => !c.muted && tap(c.day)}
-                disabled={c.muted}
-              >
-                {c.day}
-              </button>
-            ))}
-          </div>
         </div>
 
+        <div className="dp-week">
+          {DAYS_RU.map((d) => <span key={d} className="dp-week-day">{d}</span>)}
+        </div>
+
+        <div className="dp-grid">
+          {cells.map((c, i) => (
+            <button
+              key={i}
+              className={cellClass(c.day, c.muted)}
+              onClick={() => !c.muted && tap(c.day)}
+              disabled={c.muted}
+            >
+              {c.day}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isRespondFlow && (
         <div className="dp-comment">
           <div className="field-box">
             <TextArea
@@ -150,11 +162,7 @@ export function DatePicker() {
             <span className="field-counter">{comment.length}/280</span>
           </div>
         </div>
-      </div>
-
-      <div className="dp-cta">
-        <PrimaryButton onClick={handleNext}>Далее</PrimaryButton>
-      </div>
-    </div>
+      )}
+    </BottomSheetShell>
   );
 }

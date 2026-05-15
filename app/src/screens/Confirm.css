@@ -23,25 +23,32 @@
   margin: 0;
 }
 
+/* Description card — matches reference: label inside top-left of a bordered
+   surface card, body text below. */
 .cf-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 16px;
 }
 
 .cf-section-title {
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-muted);
+  color: var(--text-quiet);
   margin: 0;
 }
 
 .cf-text {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 15px;
+  line-height: 22px;
   font-weight: 400;
   color: var(--text);
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .cf-card {

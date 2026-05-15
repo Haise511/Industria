@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { TopBar } from '../components/TopBar';
+import { NotificationSheet } from '../components/NotificationSheet';
 import { api, type ApiNotification } from '../api';
+import { haptic } from '../telegram';
 import './Notifications.css';
 
 function groupByDate(items: ApiNotification[]): Array<{ section: string; items: ApiNotification[] }> {
@@ -25,6 +27,7 @@ function groupByDate(items: ApiNotification[]): Array<{ section: string; items: 
 export function Notifications() {
   const [groups, setGroups] = useState<ReturnType<typeof groupByDate>>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<ApiNotification | null>(null);
 
   useEffect(() => {
     api.getNotifications()
@@ -51,10 +54,13 @@ export function Notifications() {
                 <article
                   key={n.id}
                   className={`notif-item ${!n.read ? 'is-unread' : 'is-read'}`}
+                  role="button"
+                  onClick={() => { haptic('light'); setSelected(n); }}
                 >
                   <div className="notif-avatar" aria-hidden />
                   <div className="notif-text">
-                    <h4 className="notif-h4">{n.text}</h4>
+                    <h4 className="notif-h4">{n.title ?? n.text}</h4>
+                    {n.body && <p className="notif-body">{n.body}</p>}
                   </div>
                 </article>
               ))}
@@ -62,6 +68,7 @@ export function Notifications() {
           </div>
         ))}
       </div>
+      <NotificationSheet notification={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }

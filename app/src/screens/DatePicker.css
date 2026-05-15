@@ -14,10 +14,10 @@
 }
 
 .dp-pad {
-  padding: 0 16px;
+  padding: 40px 16px 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .dp-title {
@@ -44,6 +44,12 @@
   font-size: 16px;
   font-weight: 500;
   color: var(--text);
+}
+
+.dp-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .dp-month-prev,
@@ -79,7 +85,7 @@
 
 .dp-cell {
   position: relative;
-  height: 40px;
+  height: 48px;
   background: transparent;
   color: var(--text);
   font-size: 16px;

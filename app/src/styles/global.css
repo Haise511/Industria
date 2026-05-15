@@ -82,6 +82,23 @@ a {
   display: none;
 }
 
+/* Sheet background — Feed mounted underneath bottom-sheet routes so the sheet
+   backdrop (blur 8px) shows live content. Constrained to the same 390px frame
+   as #root so opening/closing the sheet doesn't cause the layer to "snap" to a
+   different width. Pointer-events disabled so taps go to the sheet. */
+.sheet-bg {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--frame-w);
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
 /* Reusable patterns */
 .screen {
   display: flex;
