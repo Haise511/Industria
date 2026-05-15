@@ -6,7 +6,7 @@ import { TextArea, TextInput } from '../components/Field';
 import { Flag } from '../components/Flag';
 import { ArrowDown2, InfoCircle, TickCircle } from 'iconsax-react';
 import { haptic, getTg } from '../telegram';
-import { api, setToken, USE_LOCAL_MOCK } from '../api';
+import { api, setToken } from '../api';
 import { KG_CITIES } from '../constants/cities';
 import { useAuth } from '../context/AuthContext';
 // Role illustrations extracted from the Figma file (image fills on nodes
@@ -310,8 +310,7 @@ export function OnbLoading() {
     }
 
     // App entry — authenticate with Telegram and route accordingly.
-    // SANDBOX-ONLY: USE_LOCAL_MOCK forces a non-empty initData so auth runs.
-    const initData = (USE_LOCAL_MOCK ? 'mock' : '') || (getTg()?.initData ?? '');
+    const initData = getTg()?.initData ?? '';
     if (!initData) {
       // Dev mode: no Telegram context, skip auth and go straight to onboarding.
       const id = setTimeout(() => nav('/onboarding/language', { replace: true }), 1500);

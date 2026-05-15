@@ -101,7 +101,9 @@ export interface ApiResponse {
 
 export interface ApiNotification {
   id: number
-  text: string
+  text: string           // legacy single-line — used as title when `title` is absent
+  title?: string
+  body?: string
   read: boolean
   createdAt: string
 }
@@ -110,6 +112,23 @@ export interface ApiNotification {
 
 import type { Order } from './components/OrderCard'
 
+const MONTHS_RU_GEN = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+]
+
+/** Convert "YYYY-MM-DD" → "DD-monthRu" (e.g. "2026-05-12" → "12-мая").
+ *  If the input isn't strict ISO (e.g. already formatted as a range like
+ *  "12–15 мая 2026" from DatePicker), return as-is. */
+function formatDateRu(s: string | null | undefined): string | undefined {
+  if (!s) return undefined
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return s
+  const day = Number(m[3])
+  const month = MONTHS_RU_GEN[Number(m[2]) - 1] ?? ''
+  return `${day}-${month}`
+}
+
 export function toOrder(o: ApiOrder, status?: Order['status']): Order {
   const price = o.price.toLocaleString('ru-RU') + ' сом'
   return {
@@ -117,7 +136,7 @@ export function toOrder(o: ApiOrder, status?: Order['status']): Order {
     price,
     contract: o.contract,
     city: o.city ?? undefined,
-    date: o.date ?? undefined,
+    date: formatDateRu(o.date),
     description: o.description,
     authorName: o.author.name,
     authorRole: o.author.role as Order['authorRole'],
