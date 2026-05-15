@@ -39,7 +39,7 @@ Industria/
 │   ├── src/
 │   │   ├── api.ts         ← HTTP клиент, JWT, адаптеры данных
 │   │   ├── context/AuthContext.tsx  ← user + token, localStorage
-│   │   ├── store/filterStore.ts     ← фильтры ленты (модуль без React)
+│   │   ├── store/filterStore.ts     ← фильтры ленты (JS-модуль с подпиской)
 │   │   ├── telegram.ts    ← обёртка Telegram WebApp SDK
 │   │   ├── components/    ← OrderCard, TopBar, BottomNav, PrimaryButton, Field
 │   │   ├── screens/       ← каждый экран = отдельный роут
@@ -48,8 +48,12 @@ Industria/
 │   └── vercel.json
 └── server/
     ├── src/
-    │   ├── index.ts
-    │   ├── lib/db.ts, lib/telegram.ts
+    │   ├── index.ts       ← Fastify + CORS + JWT + bot webhook
+    │   ├── bot/index.ts   ← grammy бот: /start, /help, fallback, bot.catch
+    │   ├── lib/
+    │   │   ├── db.ts      ← Prisma singleton
+    │   │   ├── telegram.ts ← валидация initData
+    │   │   └── notify.ts  ← notify(userId, text) — БД + Telegram sendMessage
     │   └── routes/auth.ts, orders.ts, profile.ts, notifications.ts
     ├── prisma/schema.prisma
     └── .env.example
@@ -113,13 +117,23 @@ Notification — userId, text, read
 
 **Backend (Railway):**
 ```
-DATABASE_URL, BOT_TOKEN, JWT_SECRET, FRONTEND_URL, PORT
+DATABASE_URL       — PostgreSQL (Railway подставляет сам через Add Variable)
+BOT_TOKEN          — токен бота от @BotFather
+BOT_USERNAME       — @username бота (напр. Prototype_mini_app_bot)
+BOT_SECRET_PATH    — путь webhook, напр. tg-webhook
+SERVER_URL         — публичный URL сервера (напр. https://industria-production-83f3.up.railway.app)
+APP_URL            — URL фронтенда для кнопки бота (https://...) — ОТДЕЛЬНО от FRONTEND_URL
+FRONTEND_URL       — для CORS, может быть * или конкретный домен
+JWT_SECRET         — секрет подписи токенов
+PORT               — Railway подставляет сам
 ```
 
-**Frontend (Vercel + .env):**
+**Frontend (Vercel + .env локально):**
 ```
 VITE_API_URL = https://industria-production-83f3.up.railway.app
 ```
+
+**Важно:** `APP_URL` и `FRONTEND_URL` — разные переменные. `FRONTEND_URL` используется для CORS (может быть `*`), `APP_URL` должен быть валидным `https://` URL — иначе кнопка WebApp в боте упадёт с 500.
 
 ---
 
@@ -136,10 +150,14 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 - Отклик → API (флоу: дата → подтверждение → POST /orders/:id/respond)
 - Детали заявки из API
 - Принять / отклонить отклик (экран `/orders/:id/responses`)
+- При принятии/отклонении — Telegram-уведомление откликнувшемуся
 - Мои заявки, отклики, активные заказы, история
 - Уведомления (группировка по дате, автопометка прочитанными)
 - Профиль из БД
 - filterStore: фильтры сохраняются между экранами
+- **Telegram-бот** (grammy): /start с кнопкой WebApp, /help, webhook на Railway
+- notify(userId, text): пишет в БД + шлёт в Telegram
+- Диагностика бота: GET /health/bot, GET /health/bot/setup
 
 ---
 
@@ -147,13 +165,13 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 
 ### 🔴 Критично (без этого продукт не работает)
 
-| Фича | Описание |
-|---|---|
-| **Подписка** | Бесплатно 30-45 дней от запуска → триал 14 дней для новых. Студии и композиторы — пожизненно бесплатно. Без подписки: серая лента, нельзя откликаться/создавать. Уведомления за 3д/12ч/момент |
-| **Telegram-бот** | Доставка уведомлений, сообщение при создании заказа, продление подписки, кнопка открытия Mini App |
-| **Жизненный цикл заказа** | Состояния: ожидает дату → сегодня → ожидает подтверждения → оцените → завершён/отменён. Двустороннее подтверждение, автозавершение через 72ч |
-| **Кыргызский язык** | Перевод всего интерфейса, переключение в реальном времени |
-| **Аватар** | Загрузка фото (через Telegram bot file_id или R2) |
+| Фича | Статус | Описание |
+|---|---|---|
+| **Telegram-бот** | ✅ Готово | /start, webhook, уведомления при принятии/отклонении отклика |
+| **Подписка** | ⬜ Pending | 30-45 дней бесплатно → триал 14д для новых. Студии/композиторы — бесплатно навсегда. Без подписки: серая лента, нельзя откликаться/создавать |
+| **Жизненный цикл заказа** | ⬜ Pending | Состояния: ожидает дату → сегодня → ожидает подтверждения → оцените → завершён/отменён. Двустороннее подтверждение, автозавершение через 72ч |
+| **Кыргызский язык** | ⬜ Pending | Перевод всего интерфейса, переключение в реальном времени |
+| **Аватар** | ⬜ Pending | Загрузка фото (через Telegram bot file_id или Cloudflare R2) |
 
 ### 🟡 Важно (UX существенно страдает)
 
