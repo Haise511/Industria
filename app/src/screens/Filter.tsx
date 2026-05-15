@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ArrowDown2 } from 'iconsax-react';
-// Figma uses the same isometric illustrations on the Filter screen as on the
-// Onboarding role picker. Re-use the extracted PNGs (image fills) instead of
-// emoji or iconsax glyphs so the visuals match the design exactly.
+import { haptic } from '../telegram';
+import { filterStore } from '../store/filterStore';
 import roleArtistImg from '../assets/figma/role_artist.png';
 import roleStudioImg from '../assets/figma/role_studio.png';
 import roleComposerImg from '../assets/figma/role_composer.png';
@@ -19,8 +18,6 @@ const ROLES: Array<{ id: string; label: string; img: string }> = [
   { id: 'customer', label: 'Заказчик', img: roleCustomerImg },
 ];
 
-/** Sort options shown on `/sort` (Figma "Сотрировка" sheet, design-refs
- *  Фильтр/Сотрировка.png). Single-select radio rows + brand CTA. */
 const SORT_OPTIONS: Array<{ id: string; label: string }> = [
   { id: 'default', label: 'По умолчанию' },
   { id: 'newest', label: 'Сначала новые' },
@@ -29,15 +26,41 @@ const SORT_OPTIONS: Array<{ id: string; label: string }> = [
   { id: 'rating', label: 'По рейтингу' },
 ];
 
+const CITIES = ['Бишкек', 'Алматы', 'Ташкент', 'Москва', 'Ош'];
+
 export function Filter() {
   const nav = useNavigate();
   const loc = useLocation();
   const isSort = loc.pathname.startsWith('/sort');
-  const [selectedRole, setSelectedRole] = useState<string | null>('artist');
-  const [rating, setRating] = useState<number | null>(null);
-  const [contract, setContract] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [sort, setSort] = useState<string>('default');
+
+  const saved = filterStore.get();
+  const [selectedRole, setSelectedRole] = useState<string | null>(saved.role);
+  const [contract, setContract] = useState(saved.contract);
+  const [minRating, setMinRating] = useState<number | null>(saved.minRating);
+  const [city, setCity] = useState<string | null>(saved.city);
+  const [sort, setSort] = useState<string>(saved.sort);
+
+  function applySort() {
+    haptic('light');
+    filterStore.set({ sort });
+    nav(-1);
+  }
+
+  function applyFilter() {
+    haptic('light');
+    filterStore.set({ role: selectedRole, contract, minRating, city });
+    nav(-1);
+  }
+
+  function reset() {
+    haptic('light');
+    filterStore.reset();
+    setSelectedRole(null);
+    setContract(false);
+    setMinRating(null);
+    setCity(null);
+    setSort('default');
+  }
 
   if (isSort) {
     return (
@@ -50,7 +73,7 @@ export function Filter() {
               <button
                 key={o.id}
                 className={`flt-sort-row ${sort === o.id ? 'is-active' : ''}`}
-                onClick={() => setSort(o.id)}
+                onClick={() => { haptic('light'); setSort(o.id); }}
               >
                 <span className={`flt-radio ${sort === o.id ? 'is-on' : ''}`}>
                   {sort === o.id && <span className="flt-radio-dot" />}
@@ -61,7 +84,7 @@ export function Filter() {
           </div>
         </div>
         <div className="flt-cta">
-          <PrimaryButton onClick={() => nav(-1)}>Выбрать</PrimaryButton>
+          <PrimaryButton onClick={applySort}>Выбрать</PrimaryButton>
         </div>
       </div>
     );
@@ -69,7 +92,7 @@ export function Filter() {
 
   return (
     <div className="screen flt">
-      <TopBar variant="back" />
+      <TopBar variant="back" rightAction={{ label: 'Сбросить', onClick: reset }} />
       <div className="flt-pad">
         <h1 className="h1-page flt-title">Фильтр</h1>
 
@@ -79,7 +102,7 @@ export function Filter() {
               <button
                 key={r.id}
                 className={`flt-role ${selectedRole === r.id ? 'is-active' : ''}`}
-                onClick={() => setSelectedRole(r.id)}
+                onClick={() => { haptic('light'); setSelectedRole(selectedRole === r.id ? null : r.id); }}
               >
                 <span className="flt-role-img" aria-hidden>
                   <img src={r.img} alt="" />
@@ -90,51 +113,39 @@ export function Filter() {
           </div>
         </Section>
 
-        <Section title="Средняя цена">
-          <div className="flt-slider">
-            <div className="flt-slider-track">
-              <div className="flt-slider-fill" />
-              <span className="flt-slider-thumb flt-slider-thumb--l" />
-              <span className="flt-slider-thumb flt-slider-thumb--r" />
-            </div>
-            <div className="flt-slider-row">
-              <div className="flt-slider-cell">2 000 с</div>
-              <div className="flt-slider-cell">200 000 с</div>
-            </div>
+        <Section title="Город">
+          <div className="field-box flt-select-wrap">
+            <select
+              className="flt-select-control"
+              value={city ?? ''}
+              onChange={(e) => setCity(e.target.value || null)}
+            >
+              <option value="">Любой</option>
+              {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <Chev />
           </div>
         </Section>
 
-        <button className="flt-select">
-          <span className="muted">Город</span>
-          <Chev />
-        </button>
+        <Toggle label="Работает по договору" checked={contract} onToggle={() => { haptic('light'); setContract(v => !v); }} />
 
-        <button className="flt-select">
-          <span className="muted">Дата</span>
-          <Chev />
-        </button>
-
-        <Toggle label="Работает по договору" checked={contract} onToggle={() => setContract((v) => !v)} />
-
-        <Section title="Рейтинг">
+        <Section title="Рейтинг от">
           <div className="flt-stars">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
-                className={`flt-star ${(rating ?? 0) >= n ? 'is-on' : ''}`}
-                onClick={() => setRating(n)}
+                className={`flt-star ${(minRating ?? 0) >= n ? 'is-on' : ''}`}
+                onClick={() => { haptic('light'); setMinRating(minRating === n ? null : n); }}
               >
                 ★ {n}
               </button>
             ))}
           </div>
         </Section>
-
-        <Toggle label="Верифицирован" checked={verified} onToggle={() => setVerified((v) => !v)} />
       </div>
 
       <div className="flt-cta">
-        <PrimaryButton onClick={() => nav(-1)}>Подтвердить</PrimaryButton>
+        <PrimaryButton onClick={applyFilter}>Подтвердить</PrimaryButton>
       </div>
     </div>
   );

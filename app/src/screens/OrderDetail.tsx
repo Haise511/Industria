@@ -4,6 +4,7 @@ import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { api, type ApiOrder } from '../api';
 import { haptic } from '../telegram';
+import { useAuth } from '../context/AuthContext';
 import { ArrowRight2, Star1, Note, Location, Calendar, Verify } from 'iconsax-react';
 import './OrderDetail.css';
 
@@ -17,6 +18,7 @@ const ROLE_LABEL: Record<string, string> = {
 export function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
+  const { user } = useAuth();
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +45,7 @@ export function OrderDetail() {
 
   const price = order.price.toLocaleString('ru-RU') + ' сом';
   const role = ROLE_LABEL[order.author.role] ?? order.author.role;
+  const isAuthor = user?.id === order.author.id;
 
   function handleRespond() {
     haptic('light');
@@ -128,7 +131,13 @@ export function OrderDetail() {
       </div>
 
       <div className="detail-cta">
-        <PrimaryButton onClick={handleRespond}>Откликнуться</PrimaryButton>
+        {isAuthor ? (
+          <PrimaryButton onClick={() => { haptic('light'); nav(`/orders/${order.id}/responses`); }}>
+            Посмотреть отклики
+          </PrimaryButton>
+        ) : (
+          <PrimaryButton onClick={handleRespond}>Откликнуться</PrimaryButton>
+        )}
       </div>
     </div>
   );

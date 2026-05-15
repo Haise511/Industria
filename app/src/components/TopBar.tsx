@@ -4,12 +4,10 @@ import { haptic } from '../telegram';
 import './TopBar.css';
 
 interface TopBarProps {
-  /** Left button mode: "close" shows X+Закрыть pill; "back" shows ‹+Назад */
   variant?: 'close' | 'back';
-  /** Override the default back/close behavior (otherwise navigate(-1)) */
   onLeft?: () => void;
-  /** Hide the right-side dropdown chevron pill */
   hideMore?: boolean;
+  rightAction?: { label: string; onClick: () => void };
 }
 
 /**
@@ -44,7 +42,7 @@ function CloseGlyph() {
  * The pill-shaped header echoing Telegram's native chrome.
  * Matches Figma: pill bg #413f40, radius 32, 14px text in Fixel Display 500/14.
  */
-export function TopBar({ variant = 'close', onLeft, hideMore = false }: TopBarProps) {
+export function TopBar({ variant = 'close', onLeft, hideMore = false, rightAction }: TopBarProps) {
   const navigate = useNavigate();
   const handleLeft = () => {
     haptic('light');
@@ -61,7 +59,11 @@ export function TopBar({ variant = 'close', onLeft, hideMore = false }: TopBarPr
         )}
         <span>{variant === 'close' ? 'Закрыть' : 'Назад'}</span>
       </button>
-      {!hideMore && (
+      {rightAction ? (
+        <button className="topbar-pill" onClick={() => { haptic('light'); rightAction.onClick(); }}>
+          {rightAction.label}
+        </button>
+      ) : !hideMore && (
         <button className="topbar-pill topbar-pill--icon" aria-label="Меню">
           <ArrowDown2 size={14} color="currentColor" variant="Linear" />
         </button>

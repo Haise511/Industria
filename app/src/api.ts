@@ -72,6 +72,14 @@ export interface ApiResponse {
   comment: string | null
   status: 'waiting' | 'accepted' | 'rejected'
   order: ApiOrder
+  user?: {
+    id: number
+    name: string
+    role: UserRole
+    rating: number
+    avatarUrl: string | null
+    verified: boolean
+  }
 }
 
 export interface ApiNotification {
@@ -157,6 +165,17 @@ export const api = {
     return request<ApiResponse>(`/orders/${orderId}/respond`, {
       method: 'POST',
       body: JSON.stringify(data),
+    })
+  },
+
+  getOrderResponses(orderId: string) {
+    return request<ApiResponse[]>(`/orders/${orderId}/responses`)
+  },
+
+  updateResponse(responseId: number, status: 'accepted' | 'rejected') {
+    return request<ApiResponse>(`/responses/${responseId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
     })
   },
 

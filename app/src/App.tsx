@@ -13,6 +13,7 @@ import { Profile } from './screens/Profile';
 import { Notifications } from './screens/Notifications';
 import { Filter } from './screens/Filter';
 import { History } from './screens/History';
+import { OrderResponses } from './screens/OrderResponses';
 import { Verification } from './screens/Verification';
 
 /** Top-level paths that should display the bottom nav. */
@@ -81,6 +82,7 @@ export default function App() {
         <Route path="/filter" element={<Filter />} />
         <Route path="/sort" element={<Filter />} />
         <Route path="/history" element={<History />} />
+        <Route path="/orders/:id/responses" element={<OrderResponses />} />
         <Route path="/verification" element={<Verification />} />
         <Route path="/settings/language" element={<LanguageSettings />} />
 
