@@ -26,6 +26,13 @@ enum OrderMode {
 
 enum OrderStatus {
   open
+  awaiting_date
+  today
+  awaiting_confirmation
+  awaiting_rating
+  completed
+  cancelled
+  // closed — устаревшее значение, оставлено для обратной совместимости со старыми записями.
   closed
 }
 
@@ -59,6 +66,7 @@ model User {
 
 model Order {
   id          Int          @id @default(autoincrement())
+  orderNumber Int          @unique @default(autoincrement())
   author      User         @relation(fields: [authorId], references: [id])
   authorId    Int
   price       Int
@@ -68,6 +76,12 @@ model Order {
   contract    ContractType @default(cash)
   mode        OrderMode    @default(normal)
   status      OrderStatus  @default(open)
+  editFrozen  Boolean      @default(false)
+  cancelReason String?
+  confirmedAt DateTime?
+  confirmedByAuthor   Boolean @default(false)
+  confirmedByExecutor Boolean @default(false)
+  acceptedResponseId  Int?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
