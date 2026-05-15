@@ -3,8 +3,9 @@ import db from '../lib/db.js'
 import type { ContractType, OrderMode, ResponseStatus } from '@prisma/client'
 
 export default async function orderRoutes(app: FastifyInstance) {
-  // Лента заявок
+  // Лента заявок с Match Score
   app.get('/orders', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
     const query = req.query as {
       mode?: OrderMode
       role?: string
@@ -18,31 +19,27 @@ export default async function orderRoutes(app: FastifyInstance) {
     if (query.mode) where.mode = query.mode
     if (query.city) where.city = query.city
     if (query.contract) where.contract = query.contract as ContractType
+    if (query.role) where.author = { role: query.role }
 
-    if (query.role) {
-      where.author = { role: query.role }
-    }
-
-    const orders = await db.order.findMany({
-      where,
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            rating: true,
-            avatarUrl: true,
-            verified: true,
+    const [orders, viewer] = await Promise.all([
+      db.order.findMany({
+        where,
+        include: {
+          author: {
+            select: { id: true, name: true, role: true, rating: true, avatarUrl: true, verified: true },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: Number(query.limit ?? 20),
-      skip: Number(query.offset ?? 0),
-    })
+        take: Number(query.limit ?? 50),
+        skip: Number(query.offset ?? 0),
+      }),
+      db.user.findUnique({ where: { id: userId }, select: { city: true, contract: true } }),
+    ])
 
-    return reply.send(orders)
+    const scored = orders
+      .map(o => ({ ...o, score: matchScore(o, viewer) }))
+      .sort((a, b) => b.score - a.score)
+
+    return reply.send(scored)
   })
 
   // Детали заявки
@@ -203,4 +200,36 @@ export default async function orderRoutes(app: FastifyInstance) {
 
     return reply.send(updated)
   })
+}
+
+// ─── Match Score ──────────────────────────────────────────────────────────────
+// Считает релевантность заявки для конкретного пользователя.
+// Максимум 100 очков. Используется для сортировки ленты.
+
+type OrderForScore = {
+  city: string | null
+  contract: string
+  createdAt: Date
+  author: { rating: number }
+}
+
+type ViewerForScore = { city: string | null; contract: boolean } | null
+
+function matchScore(order: OrderForScore, viewer: ViewerForScore): number {
+  let score = 0
+
+  // +30 — город совпадает
+  if (viewer?.city && order.city && viewer.city === order.city) score += 30
+
+  // +20 — предпочтение по договору совпадает
+  if (viewer?.contract && order.contract === 'contract') score += 20
+
+  // 0–20 — рейтинг автора (4.8 → 18, 5.0 → 20)
+  score += Math.min(Math.round(order.author.rating * 4), 20)
+
+  // 0–30 — свежесть: теряет 1 очко в сутки, полностью гаснет за 30 дней
+  const ageInDays = (Date.now() - new Date(order.createdAt).getTime()) / 86_400_000
+  score += Math.max(0, 30 - Math.floor(ageInDays))
+
+  return score
 }

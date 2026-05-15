@@ -17,6 +17,7 @@ export interface Order {
   authorAvatar?: string;
   status?: OrderStatus;
   verified?: boolean;
+  score?: number;
 }
 
 const ROLE_LABEL: Record<OrderRole, string> = {
@@ -38,6 +39,9 @@ export function OrderCard({ order, onClick, showActions = false }: OrderCardProp
     <article className="ocard" onClick={onClick} role={onClick ? 'button' : undefined}>
       <header className="ocard-meta">
         <span className="ocard-price">{order.price}</span>
+        {typeof order.score === 'number' && order.score >= 60 && (
+          <span className="ocard-score">{order.score}%</span>
+        )}
         <div className="ocard-meta-right">
           {order.contract === 'contract' && (
             <span className="ocard-meta-item">

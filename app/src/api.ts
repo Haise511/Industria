@@ -53,6 +53,7 @@ export interface ApiOrder {
   contract: 'contract' | 'cash'
   mode: 'normal' | 'toi'
   status: 'open' | 'closed'
+  score?: number
   author: {
     id: number
     name: string
@@ -99,6 +100,7 @@ export function toOrder(o: ApiOrder, status?: Order['status']): Order {
     authorAvatar: o.author.avatarUrl ?? undefined,
     verified: o.author.verified,
     status: status ?? null,
+    score: o.score,
   }
 }
 
