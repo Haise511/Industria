@@ -119,3 +119,41 @@
   margin-top: auto;
   padding: 16px;
 }
+
+.detail-cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-cancel-btn {
+  background: transparent;
+  color: #ff5356;
+  border: 1px solid rgba(255, 83, 86, 0.4);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detail-status-pill {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid;
+  background: transparent;
+}
+
+.detail-frozen-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted, #aaa);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px 12px;
+  border-radius: 12px;
+}
