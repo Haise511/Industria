@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import db from '../lib/db.js'
+import { notify, messages } from '../lib/notify.js'
 import type { ContractType, OrderMode, ResponseStatus } from '@prisma/client'
 
 export default async function orderRoutes(app: FastifyInstance) {
@@ -189,13 +190,11 @@ export default async function orderRoutes(app: FastifyInstance) {
       data: { status },
     })
 
+    const desc = response.order.description
     if (status === 'accepted') {
-      await db.notification.create({
-        data: {
-          userId: response.userId,
-          text: 'Ваш отклик принят!',
-        },
-      })
+      notify(response.userId, messages.responseAccepted(desc)).catch(() => {})
+    } else {
+      notify(response.userId, messages.responseRejected(desc)).catch(() => {})
     }
 
     return reply.send(updated)
