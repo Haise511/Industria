@@ -4,11 +4,20 @@ import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextArea, TextInput } from '../components/Field';
 import { ArrowDown2 } from 'iconsax-react';
+import { haptic } from '../telegram';
 import './CreateOrder.css';
+
+const CITIES = ['Бишкек', 'Алматы', 'Ташкент', 'Москва', 'Ош', 'Кара-Балта'];
 
 export function CreateOrder() {
   const nav = useNavigate();
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [city, setCity] = useState('Бишкек');
   const [mode, setMode] = useState<'normal' | 'toi'>('normal');
+
+  const canProceed = description.trim().length > 0 && price.trim().length > 0;
+
   return (
     <div className="screen create">
       <TopBar variant="close" />
@@ -18,35 +27,47 @@ export function CreateOrder() {
         <div className="create-stack">
           <div>
             <div className="field-box create-textarea">
-              <TextArea placeholder="Кратко опишите заявку" maxLength={280} />
-              <span className="field-counter">0/280</span>
+              <TextArea
+                placeholder="Кратко опишите заявку"
+                maxLength={280}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <span className="field-counter">{description.length}/280</span>
             </div>
           </div>
 
           <div className="field-box">
-            <TextInput placeholder="Укажите точную сумму" inputMode="numeric" />
+            <TextInput
+              placeholder="Укажите точную сумму"
+              inputMode="numeric"
+              value={price}
+              onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))}
+            />
           </div>
 
-          <button className="create-select">
-            <span className="muted">Выберите город</span>
+          <div className="field-box create-select-wrap">
+            <select
+              className="create-select-control"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            >
+              {CITIES.map((c) => <option key={c}>{c}</option>)}
+            </select>
             <Chevron />
-          </button>
+          </div>
 
-          {/* Mode segmented — full-width, matches the Onboarding picker. The
-              new Figma design shows the same 🎵 / 🪕 emoji pair as on the
-              «Заполните основные данные» step, not the abstract gradient
-              squares we used previously. */}
           <div className="create-modes">
             <button
               className={`create-mode ${mode === 'normal' ? 'is-active' : ''}`}
-              onClick={() => setMode('normal')}
+              onClick={() => { haptic('light'); setMode('normal'); }}
               type="button"
             >
               <span aria-hidden>🎵</span> Обычный
             </button>
             <button
               className={`create-mode ${mode === 'toi' ? 'is-active' : ''}`}
-              onClick={() => setMode('toi')}
+              onClick={() => { haptic('light'); setMode('toi'); }}
               type="button"
             >
               <span aria-hidden>🪕</span> Тойский
@@ -56,7 +77,15 @@ export function CreateOrder() {
       </div>
 
       <div className="create-cta">
-        <PrimaryButton onClick={() => nav('/create/date')}>Далее</PrimaryButton>
+        <PrimaryButton
+          disabled={!canProceed}
+          onClick={() => {
+            haptic('light');
+            nav('/create/date', { state: { description, price: Number(price), city, mode } });
+          }}
+        >
+          Далее
+        </PrimaryButton>
       </div>
     </div>
   );

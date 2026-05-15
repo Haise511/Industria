@@ -46,6 +46,7 @@
   color: var(--text);
 }
 
+.dp-month-prev,
 .dp-month-next {
   width: 28px;
   height: 28px;

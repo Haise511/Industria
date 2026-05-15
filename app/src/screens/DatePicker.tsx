@@ -1,57 +1,107 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextArea } from '../components/Field';
-import { ArrowRight2 } from 'iconsax-react';
+import { ArrowLeft2, ArrowRight2 } from 'iconsax-react';
+import { haptic } from '../telegram';
 import './DatePicker.css';
 
 const DAYS_RU = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+const MONTHS_RU = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+];
 
-// Hardcoded April 2026 to match Figma. Real implementation would compute.
-const MONTH_LABEL = 'Апрель 2026';
-const TODAY = 23; // brand dot indicator under this day, per Figma
-// Leading days from March (cells before April 1 starts) — April 2026 starts
-// on a Wednesday, so leading = [30, 31] from March on Mon/Tue. Trailing days
-// 1, 2 from May fill the final row.
-const LEADING = [30, 31];
-const TRAILING = [1, 2];
-const DAYS_IN_MONTH = 30;
+function buildMonthGrid(year: number, month: number) {
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  // Convert to Mon-based (0=Mon … 6=Sun)
+  const leading = (firstDay + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
 
-/**
- * Calendar reproducing Figma "Выберите дату" — month grid wrapped in a
- * surface-1 card, leading + trailing days muted, range selection (22–25 in
- * the design), today gets a brand dot below the number, plus an optional
- * comment textarea underneath.
- */
+  const leadCells = Array.from({ length: leading }, (_, i) => ({
+    day: daysInPrev - leading + i + 1,
+    muted: true as const,
+  }));
+  const mainCells = Array.from({ length: daysInMonth }, (_, i) => ({
+    day: i + 1,
+    muted: false as const,
+  }));
+  const totalCells = leadCells.length + mainCells.length;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  const trailCells = Array.from({ length: trailing }, (_, i) => ({
+    day: i + 1,
+    muted: true as const,
+  }));
+
+  return [...leadCells, ...mainCells, ...trailCells];
+}
+
+function formatDateRange(year: number, month: number, start: number, end: number | null): string {
+  const m = MONTHS_RU[month].toLowerCase()
+  if (end === null || end === start) return `${start} ${m} ${year}`
+  return `${start}–${end} ${m} ${year}`
+}
+
 export function DatePicker() {
   const nav = useNavigate();
-  // Range state: [start, end]. Tapping a day either starts a new range or
-  // extends an existing one if the tap is after the start.
-  const [range, setRange] = useState<[number, number | null]>([22, 25]);
+  const loc = useLocation();
+  const prev = (loc.state ?? {}) as Record<string, unknown>;
+
+  // Determine which confirm screen to navigate to based on where we came from
+  const isRespondFlow = loc.pathname.startsWith('/respond');
+  const confirmPath = isRespondFlow ? '/respond/confirm' : '/create/confirm';
+
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
+  const [range, setRange] = useState<[number, number | null]>([now.getDate(), null]);
+  const [comment, setComment] = useState('');
   const [start, end] = range;
 
-  function tap(d: number) {
-    if (end === null || d < start) {
-      setRange([d, null]);
-    } else if (d === start) {
-      setRange([d, d]);
-    } else {
-      setRange([start, d]);
-    }
+  const today = now.getDate();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
+  const cells = buildMonthGrid(year, month);
+
+  function prevMonth() {
+    haptic('light');
+    if (month === 0) { setYear(y => y - 1); setMonth(11); }
+    else setMonth(m => m - 1);
+    setRange([1, null]);
   }
 
-  function classFor(d: number, muted: boolean): string {
+  function nextMonth() {
+    haptic('light');
+    if (month === 11) { setYear(y => y + 1); setMonth(0); }
+    else setMonth(m => m + 1);
+    setRange([1, null]);
+  }
+
+  function tap(day: number) {
+    haptic('light');
+    if (end === null || day < start) setRange([day, null]);
+    else if (day === start) setRange([day, day]);
+    else setRange([start, day]);
+  }
+
+  function cellClass(day: number, muted: boolean): string {
     const cls = ['dp-cell'];
-    if (muted) cls.push('dp-cell--mute');
+    if (muted) { cls.push('dp-cell--mute'); return cls.join(' '); }
+    if (isCurrentMonth && day === today) cls.push('is-today');
     const hi = end ?? start;
-    if (d >= start && d <= hi && !muted) {
+    if (day >= start && day <= hi) {
       cls.push('is-in-range');
-      if (d === start) cls.push('is-range-start');
-      if (d === hi) cls.push('is-range-end');
+      if (day === start) cls.push('is-range-start');
+      if (day === hi) cls.push('is-range-end');
     }
-    if (d === TODAY && !muted) cls.push('is-today');
     return cls.join(' ');
+  }
+
+  function handleNext() {
+    haptic('light');
+    const dateStr = formatDateRange(year, month, start, end);
+    nav(confirmPath, { state: { ...prev, date: dateStr, comment: comment || undefined } });
   }
 
   return (
@@ -60,46 +110,30 @@ export function DatePicker() {
       <div className="dp-pad">
         <h1 className="h1 dp-title">Выберите дату</h1>
 
-        {/* Calendar surface — Figma wraps month + grid in a single
-            surface-1 card with 16px padding and 24px radius. */}
         <div className="dp-card">
           <div className="dp-month">
-            <span className="dp-month-label">{MONTH_LABEL}</span>
-            <button className="dp-month-next" aria-label="Следующий месяц">
+            <button className="dp-month-prev" onClick={prevMonth} aria-label="Предыдущий месяц">
+              <ArrowLeft2 size={20} color="#fff" variant="Linear" />
+            </button>
+            <span className="dp-month-label">{MONTHS_RU[month]} {year}</span>
+            <button className="dp-month-next" onClick={nextMonth} aria-label="Следующий месяц">
               <ArrowRight2 size={20} color="#fff" variant="Linear" />
             </button>
           </div>
 
           <div className="dp-week">
-            {DAYS_RU.map((d) => (
-              <span key={d} className="dp-week-day">{d}</span>
-            ))}
+            {DAYS_RU.map((d) => <span key={d} className="dp-week-day">{d}</span>)}
           </div>
 
           <div className="dp-grid">
-            {LEADING.map((d) => (
-              <button key={`lead-${d}`} className="dp-cell dp-cell--mute" disabled>
-                {d}
-              </button>
-            ))}
-            {Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1).map((d) => {
-              // Mute past days (before "today" 23rd minus a few) to mirror the
-              // visual hierarchy in the PNG where 9, 12, 13–19 read greyer.
-              const muted = d < 20 && [9, 12, 13, 14, 15, 16, 17, 18, 19].includes(d);
-              return (
-                <button
-                  key={d}
-                  className={classFor(d, muted)}
-                  onClick={() => !muted && tap(d)}
-                  disabled={muted}
-                >
-                  {d}
-                </button>
-              );
-            })}
-            {TRAILING.map((d) => (
-              <button key={`tail-${d}`} className="dp-cell dp-cell--mute" disabled>
-                {d}
+            {cells.map((c, i) => (
+              <button
+                key={i}
+                className={cellClass(c.day, c.muted)}
+                onClick={() => !c.muted && tap(c.day)}
+                disabled={c.muted}
+              >
+                {c.day}
               </button>
             ))}
           </div>
@@ -107,14 +141,19 @@ export function DatePicker() {
 
         <div className="dp-comment">
           <div className="field-box">
-            <TextArea placeholder="Комментарий (необязательно)" maxLength={280} />
-            <span className="field-counter">0/280</span>
+            <TextArea
+              placeholder="Комментарий (необязательно)"
+              maxLength={280}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+            <span className="field-counter">{comment.length}/280</span>
           </div>
         </div>
       </div>
 
       <div className="dp-cta">
-        <PrimaryButton onClick={() => nav('/respond/confirm')}>Далее</PrimaryButton>
+        <PrimaryButton onClick={handleNext}>Далее</PrimaryButton>
       </div>
     </div>
   );

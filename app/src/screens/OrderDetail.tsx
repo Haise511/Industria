@@ -1,14 +1,62 @@
 import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { feedOrders } from '../data/mock';
-import { ArrowRight2, Star1, Note } from 'iconsax-react';
+import { api, type ApiOrder } from '../api';
+import { haptic } from '../telegram';
+import { ArrowRight2, Star1, Note, Location, Calendar, Verify } from 'iconsax-react';
 import './OrderDetail.css';
+
+const ROLE_LABEL: Record<string, string> = {
+  artist: 'Артист',
+  customer: 'Заказчик',
+  studio: 'Студия',
+  composer: 'Композитор',
+};
 
 export function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
-  const order = feedOrders.find((o) => o.id === id) ?? feedOrders[0];
+  const [order, setOrder] = useState<ApiOrder | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    api.getOrderById(id)
+      .then(setOrder)
+      .catch(() => nav(-1))
+      .finally(() => setLoading(false));
+  }, [id, nav]);
+
+  if (loading) {
+    return (
+      <div className="screen detail">
+        <TopBar />
+        <div className="detail-pad">
+          <p className="muted">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) return null;
+
+  const price = order.price.toLocaleString('ru-RU') + ' сом';
+  const role = ROLE_LABEL[order.author.role] ?? order.author.role;
+
+  function handleRespond() {
+    haptic('light');
+    nav('/respond/date', {
+      state: {
+        orderId: order!.id,
+        description: order!.description,
+        price: order!.price,
+        city: order!.city,
+        date: order!.date,
+        mode: order!.mode,
+      },
+    });
+  }
 
   return (
     <div className="screen detail">
@@ -16,56 +64,71 @@ export function OrderDetail() {
       <div className="detail-pad">
         <div className="detail-author">
           <div className="detail-avatar">
-            <span>{order.authorName.charAt(0)}</span>
+            {order.author.avatarUrl
+              ? <img src={order.author.avatarUrl} alt="" />
+              : <span>{order.author.name.charAt(0)}</span>}
           </div>
           <div className="detail-author-meta">
             <div className="detail-author-row">
-              <h2 className="h2">{order.authorName} Studio</h2>
+              <h2 className="h2">{order.author.name}</h2>
+              {order.author.verified && (
+                <Verify size={16} color="#3B9CFD" variant="Bold" />
+              )}
               <Chevron />
             </div>
-            <div className="detail-rating">
-              <Star /> 5.0
-            </div>
-            <span className="detail-role muted">Студия</span>
+            {order.author.rating > 0 && (
+              <div className="detail-rating">
+                <Star /> {order.author.rating.toFixed(1)}
+              </div>
+            )}
+            <span className="detail-role muted">{role}</span>
           </div>
         </div>
 
         <section className="detail-section">
           <h3 className="detail-section-title">Описание</h3>
-          <p className="detail-text">
-            Ищем талантливого битмейкера с тонким музыкальным вкусом и собственным звучанием! Нужен профи, который чувствует тренды, владеет
-            современным саунд-дизайном и умеет создавать цепляющие биты под разные жанры. Если ты горишь музыкой и готов к ярким коллабам — пиши нам!
-          </p>
+          <p className="detail-text">{order.description}</p>
         </section>
 
         <section className="detail-grid">
           <div className="detail-row">
             <span className="muted">Тип работы</span>
             <span className="detail-row-val">
-              <ContractIcon /> По договору
+              <ContractIcon />
+              {order.contract === 'contract' ? ' По договору' : ' Наличные'}
             </span>
           </div>
-          <div className="detail-row">
-            <span className="muted">Город</span>
-            <span className="detail-row-val">{order.city ?? 'Бишкек'}</span>
-          </div>
+          {order.city && (
+            <div className="detail-row">
+              <span className="muted">Город</span>
+              <span className="detail-row-val">
+                <Location size={14} color="currentColor" variant="Bold" /> {order.city}
+              </span>
+            </div>
+          )}
           <div className="detail-row">
             <span className="muted">Режим</span>
-            <span className="detail-row-val">Обычный</span>
+            <span className="detail-row-val">
+              {order.mode === 'toi' ? 'Тойский' : 'Обычный'}
+            </span>
           </div>
-          <div className="detail-row">
-            <span className="muted">Свободная дата</span>
-            <span className="detail-row-val">1-31 апреля</span>
-          </div>
+          {order.date && (
+            <div className="detail-row">
+              <span className="muted">Дата</span>
+              <span className="detail-row-val">
+                <Calendar size={14} color="currentColor" variant="Bold" /> {order.date}
+              </span>
+            </div>
+          )}
           <div className="detail-row detail-row--strong">
             <span className="muted">Прайс</span>
-            <span className="detail-row-val detail-price">{order.price}</span>
+            <span className="detail-row-val detail-price">{price}</span>
           </div>
         </section>
       </div>
 
       <div className="detail-cta">
-        <PrimaryButton onClick={() => nav('/respond/date')}>Откликнуться</PrimaryButton>
+        <PrimaryButton onClick={handleRespond}>Откликнуться</PrimaryButton>
       </div>
     </div>
   );
@@ -74,11 +137,9 @@ export function OrderDetail() {
 function Chevron() {
   return <ArrowRight2 size={20} color="#fff" variant="Linear" />;
 }
-
 function Star() {
   return <Star1 size={14} color="#fbbe25" variant="Bold" />;
 }
-
 function ContractIcon() {
   return <Note size={14} color="currentColor" variant="Bold" />;
 }
