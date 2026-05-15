@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  artist
+  customer
+  studio
+  composer
+}
+
+enum ContractType {
+  contract
+  cash
+}
+
+enum OrderMode {
+  normal
+  toi
+}
+
+enum OrderStatus {
+  open
+  closed
+}
+
+enum ResponseStatus {
+  waiting
+  accepted
+  rejected
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  telegramId BigInt   @unique
+  name       String
+  username   String?
+  role       Role
+  city       String?
+  bio        String?
+  avatarUrl  String?
+  rating     Float    @default(0)
+  ratingCount Int     @default(0)
+  verified   Boolean  @default(false)
+  contract   Boolean  @default(false)
+  language   String   @default("ru")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders        Order[]
+  responses     Response[]
+  notifications Notification[]
+}
+
+model Order {
+  id          Int          @id @default(autoincrement())
+  author      User         @relation(fields: [authorId], references: [id])
+  authorId    Int
+  price       Int
+  description String
+  city        String?
+  date        String?
+  contract    ContractType @default(cash)
+  mode        OrderMode    @default(normal)
+  status      OrderStatus  @default(open)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  responses Response[]
+}
+
+model Response {
+  id        Int            @id @default(autoincrement())
+  order     Order          @relation(fields: [orderId], references: [id])
+  orderId   Int
+  user      User           @relation(fields: [userId], references: [id])
+  userId    Int
+  date      String?
+  comment   String?
+  status    ResponseStatus @default(waiting)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([orderId, userId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  text      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
