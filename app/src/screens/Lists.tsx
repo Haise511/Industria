@@ -69,13 +69,6 @@ const ACTIVE_LIFECYCLES = new Set([
   'awaiting_rating',
 ]);
 
-const STATUS_HINT: Record<string, { label: string; color: string }> = {
-  awaiting_date: { label: 'Ожидает даты', color: '#ff9f33' },
-  today: { label: 'Сегодня', color: '#3B9CFD' },
-  awaiting_confirmation: { label: 'Подтвердите', color: '#ff9f33' },
-  awaiting_rating: { label: 'Оцените', color: '#fbbe25' },
-};
-
 export function ActiveOrders() {
   const nav = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -117,19 +110,9 @@ export function ActiveOrders() {
         <div className="list-cards">
           {loading && <p className="list-empty">Загрузка...</p>}
           {!loading && orders.length === 0 && <p className="list-empty">Нет активных заказов</p>}
-          {!loading && orders.map((o) => {
-            const hint = o.lifecycle ? STATUS_HINT[o.lifecycle] : undefined;
-            return (
-              <div key={o.id} className="active-card-wrap">
-                <OrderCard order={o} onClick={() => nav(`/feed/${o.id}`)} />
-                {hint && (
-                  <span className="active-card-hint" style={{ color: hint.color, borderColor: hint.color }}>
-                    {hint.label}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+          {!loading && orders.map((o) => (
+            <OrderCard key={o.id} order={o} onClick={() => nav(`/feed/${o.id}`)} />
+          ))}
         </div>
       </div>
     </div>

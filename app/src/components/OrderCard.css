@@ -135,12 +135,11 @@
   color: var(--text);
 }
 
-/* Figma: 400/12/lh=15 (NOT 500). */
+/* Figma: 400/12/lh=15 (NOT 500). Role sits tight next to rating, NOT pushed right. */
 .ocard-role {
   font-size: 12px;
   line-height: 15px;
   font-weight: 400;
-  margin-left: auto;
 }
 
 .ocard-status {
@@ -150,6 +149,8 @@
   border-radius: 999px;
   border: 1px solid;
   flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 /* Figma: action buttons 24x24, r=9, fill=#404040, gap=4 between. */

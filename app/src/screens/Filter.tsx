@@ -5,6 +5,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { ArrowDown2 } from 'iconsax-react';
 import { haptic } from '../telegram';
 import { filterStore } from '../store/filterStore';
+import { KG_CITIES } from '../constants/cities';
 import roleArtistImg from '../assets/figma/role_artist.png';
 import roleStudioImg from '../assets/figma/role_studio.png';
 import roleComposerImg from '../assets/figma/role_composer.png';
@@ -26,7 +27,7 @@ const SORT_OPTIONS: Array<{ id: string; label: string }> = [
   { id: 'rating', label: 'По рейтингу' },
 ];
 
-const CITIES = ['Бишкек', 'Алматы', 'Ташкент', 'Москва', 'Ош'];
+const CITIES = KG_CITIES;
 
 export function Filter() {
   const nav = useNavigate();

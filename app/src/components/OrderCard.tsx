@@ -98,7 +98,7 @@ export function OrderCard({ order, onClick, showActions = false }: OrderCardProp
           </span>
         </div>
 
-        {order.status && <StatusBadge status={order.status} />}
+        <FooterBadge order={order} />
 
         {showActions && (
           <div className="ocard-actions">
@@ -115,17 +115,31 @@ export function OrderCard({ order, onClick, showActions = false }: OrderCardProp
   );
 }
 
-function StatusBadge({ status }: { status: OrderStatus }) {
-  if (!status) return null;
-  const map = {
-    waiting: { label: 'В ожидании', color: '#ff9f33', bg: 'rgba(255, 159, 51, 0.12)' },
-    accepted: { label: 'Принят', color: '#34c759', bg: 'rgba(52, 199, 89, 0.12)' },
-    rejected: { label: 'Отклонен', color: '#ff5356', bg: 'rgba(255, 83, 86, 0.12)' },
-  };
-  const s = map[status];
+const LIFECYCLE_BADGE: Partial<Record<OrderLifecycle, { label: string; color: string }>> = {
+  awaiting_date:         { label: 'Ожидает даты',  color: '#ff9f33' },
+  today:                 { label: 'Сегодня',       color: '#3B9CFD' },
+  awaiting_confirmation: { label: 'Подтвердите',   color: '#ff9f33' },
+  awaiting_rating:       { label: 'Оцените',       color: '#fbbe25' },
+};
+
+const STATUS_BADGE: Record<NonNullable<OrderStatus>, { label: string; color: string }> = {
+  waiting:  { label: 'В ожидании', color: '#ff9f33' },
+  accepted: { label: 'Принят',     color: '#34c759' },
+  rejected: { label: 'Отклонен',   color: '#ff5356' },
+};
+
+/** Right-aligned pill inside the footer. Priority: response status > lifecycle. */
+function FooterBadge({ order }: { order: Order }) {
+  const meta = order.status
+    ? STATUS_BADGE[order.status]
+    : order.lifecycle ? LIFECYCLE_BADGE[order.lifecycle] : undefined;
+  if (!meta) return null;
   return (
-    <span className="ocard-status" style={{ color: s.color, background: s.bg, borderColor: s.color }}>
-      {s.label}
+    <span
+      className="ocard-status"
+      style={{ color: meta.color, borderColor: meta.color, background: 'transparent' }}
+    >
+      {meta.label}
     </span>
   );
 }

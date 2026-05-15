@@ -3,11 +3,14 @@
 }
 
 .create-pad {
-  padding: 0 16px;
+  padding: 40px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .create-title {
-  margin-bottom: 24px;
+  margin: 0;
 }
 
 .create-stack {
@@ -17,7 +20,7 @@
 }
 
 .create-textarea .field-textarea {
-  min-height: 60px;
+  min-height: 88px;
 }
 
 .create-select {
@@ -55,6 +58,9 @@
   font-family: var(--font);
   appearance: none;
   cursor: pointer;
+}
+.create-select-wrap.is-placeholder .create-select-control {
+  color: var(--text-quiet);
 }
 
 /* Figma: full-width segmented row inside a 999px pill container, 4px

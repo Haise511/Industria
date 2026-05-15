@@ -6,7 +6,8 @@ import { TextArea, TextInput } from '../components/Field';
 import { Flag } from '../components/Flag';
 import { ArrowDown2, InfoCircle, TickCircle } from 'iconsax-react';
 import { haptic, getTg } from '../telegram';
-import { api, setToken } from '../api';
+import { api, setToken, USE_LOCAL_MOCK } from '../api';
+import { KG_CITIES } from '../constants/cities';
 import { useAuth } from '../context/AuthContext';
 // Role illustrations extracted from the Figma file (image fills on nodes
 // 14:3313 / 14:3320 / 14:3327 / 14:3334) — these are not iconsax glyphs but
@@ -159,10 +160,7 @@ export function OnbBasicData() {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
               >
-                <option>Бишкек</option>
-                <option>Алматы</option>
-                <option>Ташкент</option>
-                <option>Москва</option>
+                {KG_CITIES.map(c => <option key={c}>{c}</option>)}
               </select>
               <ArrowDown2 size={18} color="currentColor" variant="Linear" />
             </div>
@@ -312,7 +310,8 @@ export function OnbLoading() {
     }
 
     // App entry — authenticate with Telegram and route accordingly.
-    const initData = getTg()?.initData ?? '';
+    // SANDBOX-ONLY: USE_LOCAL_MOCK forces a non-empty initData so auth runs.
+    const initData = (USE_LOCAL_MOCK ? 'mock' : '') || (getTg()?.initData ?? '');
     if (!initData) {
       // Dev mode: no Telegram context, skip auth and go straight to onboarding.
       const id = setTimeout(() => nav('/onboarding/language', { replace: true }), 1500);
