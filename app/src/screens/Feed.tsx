@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Notification, Filter, ArrangeVertical, Add } from 'iconsax-react';
+import { Add } from 'iconsax-react';
+import { BellIcon } from '../components/icons/BellIcon';
+import { FilterIcon } from '../components/icons/FilterIcon';
+import { SortArrowsIcon } from '../components/icons/SortArrowsIcon';
 import { TopBar } from '../components/TopBar';
 import { OrderCard, type Order } from '../components/OrderCard';
 import { haptic } from '../telegram';
@@ -41,9 +44,16 @@ export function Feed() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(() => filterStore.get());
+  const [hasUnread, setHasUnread] = useState(false);
 
   // Re-render when filterStore changes (user applied filters)
   useEffect(() => filterStore.subscribe(() => setFilters(filterStore.get())), []);
+
+  useEffect(() => {
+    api.getNotifications()
+      .then(list => setHasUnread(list.some(n => !n.read)))
+      .catch(() => setHasUnread(false));
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -81,19 +91,18 @@ export function Feed() {
               onClick={() => { haptic('light'); setMode('toi'); }}>Тойский</button>
           </div>
           <button className="feed-bell" onClick={() => nav('/notifications')} aria-label="Уведомления">
-            <Notification size={20} color="#fff" variant="Bold" />
-            <span className="feed-bell-dot" />
+            <BellIcon size={20} color="#fff" unread={hasUnread} />
           </button>
         </div>
 
         <div className="h-scroll feed-chips">
           <button className={`feed-chip-icon${hasActiveFilters ? ' is-active' : ''}`}
             aria-label="Фильтр" onClick={() => nav('/filter')}>
-            <Filter size={20} color="#fff" variant="Bold" />
+            <FilterIcon size={20} color="#fff" />
           </button>
           <button className={`feed-chip-icon${filters.sort !== 'default' ? ' is-active' : ''}`}
             aria-label="Сортировка" onClick={() => nav('/sort')}>
-            <ArrangeVertical size={20} color="#fff" variant="Bold" />
+            <SortArrowsIcon size={20} color="#fff" />
           </button>
           {CHIPS.map((c) => (
             <button key={c} className={`feed-chip ${chip === c ? 'is-active' : ''}`}
