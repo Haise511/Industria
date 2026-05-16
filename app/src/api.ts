@@ -98,13 +98,16 @@ export interface ApiOrder {
   }
 }
 
+export type ResponseLifecycle = 'waiting' | 'accepted' | 'rejected' | 'withdrawn'
+
 export interface ApiResponse {
   id: number
   orderId: number
   userId: number
   date: string | null
   comment: string | null
-  status: 'waiting' | 'accepted' | 'rejected'
+  status: ResponseLifecycle
+  withdrawnAt?: string | null
   order: ApiOrder
   user?: {
     id: number
@@ -270,6 +273,16 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     })
+  },
+
+  // Текущий отклик пользователя на конкретный заказ. 204 → ещё не откликался.
+  getMyResponseForOrder(orderId: number) {
+    return requestMaybe<ApiResponse>(`/orders/${orderId}/my-response`)
+  },
+
+  // Отозвать собственный отклик (доступно только для status='waiting').
+  withdrawResponse(responseId: number) {
+    return request<ApiResponse>(`/responses/${responseId}/withdraw`, { method: 'POST' })
   },
 
   confirmOrder(orderId: number) {

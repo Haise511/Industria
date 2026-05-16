@@ -153,12 +153,20 @@ export default async function orderRoutes(app: FastifyInstance) {
     return reply.status(201).send(response)
   })
 
-  // Мои отклики
+  // Мои отклики. По умолчанию скрываем отозванные (status='withdrawn') —
+  // они нужны только для аудита/истории. Чтобы запросить вместе с ними,
+  // передайте ?includeWithdrawn=1.
   app.get('/responses', { onRequest: [app.authenticate] }, async (req, reply) => {
     const { userId } = req.user as { userId: number }
+    const query = req.query as { includeWithdrawn?: string }
+
+    const where: Record<string, unknown> = { userId }
+    if (!query.includeWithdrawn) {
+      where.status = { not: 'withdrawn' }
+    }
 
     const responses = await db.response.findMany({
-      where: { userId },
+      where,
       include: {
         order: {
           include: {
@@ -174,7 +182,8 @@ export default async function orderRoutes(app: FastifyInstance) {
     return reply.send(responses)
   })
 
-  // Отклики на мои заявки (для автора)
+  // Отклики на мои заявки (для автора). Отозванные исполнителем не
+  // показываем — их больше нет в очереди ожидания.
   app.get('/orders/:id/responses', { onRequest: [app.authenticate] }, async (req, reply) => {
     const { userId } = req.user as { userId: number }
     const { id } = req.params as { id: string }
@@ -184,7 +193,7 @@ export default async function orderRoutes(app: FastifyInstance) {
     if (order.authorId !== userId) return reply.status(403).send({ error: 'Forbidden' })
 
     const responses = await db.response.findMany({
-      where: { orderId: Number(id) },
+      where: { orderId: Number(id), status: { not: 'withdrawn' } },
       include: {
         user: {
           select: { id: true, name: true, role: true, rating: true, ratingCount: true, avatarUrl: true, verified: true },
@@ -193,6 +202,43 @@ export default async function orderRoutes(app: FastifyInstance) {
     })
 
     return reply.send(responses)
+  })
+
+  // Мой отклик на конкретный заказ (для UI: показать кнопку «Отозвать»
+  // или «Откликнуться»). Возвращает 204, если пользователь ещё не
+  // откликался — это нормальный сценарий, а не 404.
+  app.get('/orders/:id/my-response', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+    const response = await db.response.findUnique({
+      where: { orderId_userId: { orderId: Number(id), userId } },
+    })
+    if (!response) return reply.status(204).send()
+    return reply.send(response)
+  })
+
+  // Отозвать собственный отклик. Допустимо только пока status='waiting' —
+  // если автор уже принял или отклонил, отозвать нельзя (нет смысла).
+  app.post('/responses/:id/withdraw', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+
+    const response = await db.response.findUnique({
+      where: { id: Number(id) },
+      include: { order: true },
+    })
+    if (!response) return reply.status(404).send({ error: 'Not found' })
+    if (response.userId !== userId) return reply.status(403).send({ error: 'Forbidden' })
+    if (response.status !== 'waiting') {
+      return reply.status(409).send({ error: 'Can only withdraw waiting responses' })
+    }
+
+    const updated = await db.response.update({
+      where: { id: response.id },
+      data: { status: 'withdrawn', withdrawnAt: new Date() } as never,
+    })
+
+    return reply.send(updated)
   })
 
   // Принять / отклонить отклик

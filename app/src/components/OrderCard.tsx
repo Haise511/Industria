@@ -2,7 +2,7 @@ import { Star1, Location, Calendar, Note, TickSquare, CloseSquare, Verify } from
 import './OrderCard.css';
 
 export type OrderRole = 'artist' | 'customer' | 'studio' | 'composer';
-export type OrderStatus = 'waiting' | 'accepted' | 'rejected' | null;
+export type OrderStatus = 'waiting' | 'accepted' | 'rejected' | 'withdrawn' | null;
 export type OrderLifecycle =
   | 'open'
   | 'awaiting_date'
@@ -131,8 +131,9 @@ const LIFECYCLE_BADGE: Partial<Record<OrderLifecycle, { label: string; color: st
 };
 
 const STATUS_BADGE: Record<NonNullable<OrderStatus>, { label: string; color: string }> = {
-  waiting:  { label: 'В ожидании', color: '#ff9f33' },
-  accepted: { label: 'Принят',     color: '#34c759' },
+  waiting:   { label: 'В ожидании', color: '#ff9f33' },
+  accepted:  { label: 'Принят',     color: '#34c759' },
+  withdrawn: { label: 'Отозван',    color: '#8b8b8b' },
   rejected: { label: 'Отклонен',   color: '#ff5356' },
 };
 

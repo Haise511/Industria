@@ -4,7 +4,7 @@ import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { CancelOrderModal } from '../components/CancelOrderModal';
 import { ReviewModal } from '../components/ReviewModal';
-import { api, formatRatingTier, type ApiOrder, type ApiReview, type OrderLifecycleStatus } from '../api';
+import { api, formatRatingTier, type ApiOrder, type ApiResponse, type ApiReview, type OrderLifecycleStatus } from '../api';
 import { haptic } from '../telegram';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight2, Star1, Note, Location, Calendar, Verify, Lock1 } from 'iconsax-react';
@@ -49,6 +49,9 @@ export function OrderDetail() {
   const [reviewOpen, setReviewOpen] = useState(false);
   // null = ещё не загрузили / нет такого; ApiReview = пользователь уже оценил
   const [myReview, setMyReview] = useState<ApiReview | null>(null);
+  // null = пользователь не откликался / автор; ApiResponse — его отклик
+  // (нужен, чтобы знать id для withdraw + актуальный status).
+  const [myResponse, setMyResponse] = useState<ApiResponse | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -68,6 +71,18 @@ export function OrderDetail() {
       .then(setMyReview)
       .catch(() => setMyReview(null));
   }, [order]);
+
+  // Мой отклик на этот заказ. Нужен, чтобы показать «Отозвать» для status=waiting
+  // (исполнитель открыл свой же ответ). Автору не запрашиваем — у него нет
+  // собственного отклика на свою заявку.
+  useEffect(() => {
+    if (!order || !user) return;
+    if (user.id === order.author.id) return;
+    if (order.status !== 'open') return;
+    api.getMyResponseForOrder(order.id)
+      .then(setMyResponse)
+      .catch(() => setMyResponse(null));
+  }, [order, user]);
 
   if (loading) {
     return (
@@ -153,6 +168,22 @@ export function OrderDetail() {
       setCancelOpen(false);
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  // Отозвать собственный отклик. Доступно только пока response.status='waiting'
+  // (CtaBlock не покажет кнопку в иных случаях). После успеха возвращаемся в
+  // /responses — отклик из активного списка пропадает.
+  async function handleWithdraw() {
+    if (!myResponse) return;
+    haptic('medium');
+    setActionLoading(true);
+    try {
+      await api.withdrawResponse(myResponse.id);
+      nav('/responses');
+    } catch (e) {
+      console.error(e);
+      setActionLoading(false);
     }
   }
 
@@ -266,10 +297,12 @@ export function OrderDetail() {
           isAuthor={isAuthor}
           myConfirmed={!!myConfirmed}
           alreadyReviewed={!!myReview}
+          myResponseStatus={myResponse?.status ?? null}
           actionLoading={actionLoading}
           onRespond={handleRespond}
           onConfirm={handleConfirm}
           onReview={handleOpenReview}
+          onWithdraw={handleWithdraw}
           onCancel={() => { haptic('light'); setCancelOpen(true); }}
           onViewResponses={() => { haptic('light'); nav(`/orders/${order.id}/responses`); }}
         />
@@ -296,10 +329,13 @@ interface CtaProps {
   myConfirmed: boolean;
   /** Уже оставил отзыв по этому заказу — кнопка превращается в индикатор. */
   alreadyReviewed: boolean;
+  /** Статус моего отклика на этот заказ. null, если ещё не откликался. */
+  myResponseStatus: 'waiting' | 'accepted' | 'rejected' | 'withdrawn' | null;
   actionLoading: boolean;
   onRespond: () => void;
   onConfirm: () => void;
   onReview: () => void;
+  onWithdraw: () => void;
   onCancel: () => void;
   onViewResponses: () => void;
 }
@@ -317,6 +353,20 @@ function CtaBlock(p: CtaProps) {
         <PrimaryButton onClick={p.onViewResponses}>Посмотреть отклики</PrimaryButton>
       );
     }
+    // Исполнитель уже откликнулся и ждёт решения автора — даём отозвать.
+    if (p.myResponseStatus === 'waiting') {
+      return (
+        <button
+          type="button"
+          className="detail-withdraw-btn"
+          disabled={p.actionLoading}
+          onClick={p.onWithdraw}
+        >
+          Отозвать
+        </button>
+      );
+    }
+    // Отклик отклонён или отозван — снова даём шанс откликнуться.
     return <PrimaryButton onClick={p.onRespond}>Откликнуться</PrimaryButton>;
   }
 

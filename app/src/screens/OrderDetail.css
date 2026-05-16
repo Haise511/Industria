@@ -145,6 +145,29 @@
   cursor: pointer;
 }
 
+/* «Отозвать» — тёмная пилюля по Figma node 1:9008 (358x52, fill #3d3d42,
+   radius 96). Визуально secondary, не destructive — это просто откат
+   собственного отклика. */
+.detail-withdraw-btn {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 96px;
+  background: #3d3d42;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.12s ease;
+}
+.detail-withdraw-btn:active {
+  transform: scale(0.98);
+}
+.detail-withdraw-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .detail-status-pill {
   align-self: flex-start;
   font-size: 13px;

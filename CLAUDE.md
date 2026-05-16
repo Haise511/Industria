@@ -76,13 +76,13 @@ Notification — userId, text, read
 `closed` оставлен для обратной совместимости со старыми записями.
 
 **Предстоит расширить** (см. раздел «Roadmap»):
-- `Response` → добавить `withdrawnAt`
 - `Subscription` — userId, plan, expiresAt, trialUsed
 - `User` → добавить `nameChangedAt`, `socials`, `streamings`, `cancelRate`
 
 **Уже добавлено** (после первой версии CLAUDE.md):
 - `Review` — `orderId, fromUserId, toUserId, stars (1..5), text?, createdAt`. Уникальный индекс `[orderId, fromUserId]` — один отзыв на сторону по заказу.
 - `User.ratingCount` — счётчик полученных отзывов. Обновляется агрегатом `avg(stars)` в `POST /orders/:id/review`.
+- `Response.withdrawnAt` + `ResponseStatus.withdrawn` — исполнитель может отозвать свой отклик пока он `waiting` (`POST /responses/:id/withdraw`).
 
 ---
 
@@ -107,6 +107,8 @@ Notification — userId, text, read
 | POST | /orders/:id/review | Оставить отзыв (1..5 + текст ≤280). Когда обе стороны оставили — автоматический переход в completed |
 | GET | /orders/:id/my-review | Мой отзыв по заказу (204 если ещё нет) |
 | GET | /users/:id/reviews | Отзывы, полученные пользователем |
+| GET | /orders/:id/my-response | Мой отклик на заказ (204 если не откликался) |
+| POST | /responses/:id/withdraw | Отозвать собственный отклик (только если status=waiting) |
 | GET | /notifications | Список уведомлений |
 | PATCH | /notifications/read | Пометить прочитанными |
 
@@ -192,7 +194,7 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 | Фича | Статус | Описание |
 |---|---|---|
 | **Рейтинг и отзывы** | ✅ Готово | Модель `Review`, `POST /orders/:id/review`, `ReviewModal` после awaiting_rating. Когда обе стороны оставили отзыв → автоматический переход в completed. Пилюля «Новый» при <3 отзывов, clamp ≥3.0 при 3–9, среднее при 10+. Хелпер `formatRatingTier` в `app/src/api.ts`. |
-| **Отзыв отклика** | Можно отозвать пока статус «Ожидает ответа» |
+| **Отзыв отклика** | ✅ Готово | `ResponseStatus.withdrawn` + `Response.withdrawnAt`. `POST /responses/:id/withdraw` — доступно только владельцу пока `waiting`. На /responses карточки кликабельны; на OrderDetail при `lifecycle=open` и `myResponse.status=waiting` — кнопка «Отозвать» (тёмная пилюля #3d3d42 по Figma node 1:9008). Отозванные не показываются в `GET /responses` и `GET /orders/:id/responses`. |
 | **Заморозка заявки** | Редактирование заблокировано после первого отклика |
 | **1 активная заявка** | На каждый тип задачи у одного пользователя |
 | **Имя раз в 30 дней** | Ограничение на смену имени |

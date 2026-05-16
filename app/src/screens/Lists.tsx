@@ -35,6 +35,7 @@ export function MyOrders() {
 }
 
 export function Responses() {
+  const nav = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +55,9 @@ export function Responses() {
           {loading && <p className="list-empty">Загрузка...</p>}
           {!loading && orders.length === 0 && <p className="list-empty">Нет откликов</p>}
           {!loading && orders.map((o) => (
-            <OrderCard key={o.id} order={o} />
+            // Тап по карточке открывает детальный экран заказа — там кнопка
+            // «Отозвать», если статус отклика всё ещё waiting.
+            <OrderCard key={o.id} order={o} onClick={() => nav(`/feed/${o.id}`)} />
           ))}
         </div>
       </div>

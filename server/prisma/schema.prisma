@@ -40,6 +40,8 @@ enum ResponseStatus {
   waiting
   accepted
   rejected
+  // withdrawn — исполнитель отозвал отклик до ответа автора (пока статус waiting).
+  withdrawn
 }
 
 model User {
@@ -96,16 +98,19 @@ model Order {
 }
 
 model Response {
-  id        Int            @id @default(autoincrement())
-  order     Order          @relation(fields: [orderId], references: [id])
-  orderId   Int
-  user      User           @relation(fields: [userId], references: [id])
-  userId    Int
-  date      String?
-  comment   String?
-  status    ResponseStatus @default(waiting)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id          Int            @id @default(autoincrement())
+  order       Order          @relation(fields: [orderId], references: [id])
+  orderId     Int
+  user        User           @relation(fields: [userId], references: [id])
+  userId      Int
+  date        String?
+  comment     String?
+  status      ResponseStatus @default(waiting)
+  // Время отзыва отклика — пока остаётся в БД для аудита.
+  // status='withdrawn' + withdrawnAt устанавливаются вместе.
+  withdrawnAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@unique([orderId, userId])
 }
