@@ -77,9 +77,12 @@ Notification — userId, text, read
 
 **Предстоит расширить** (см. раздел «Roadmap»):
 - `Response` → добавить `withdrawnAt`
-- `Review` — новая таблица (userId, targetId, orderId, stars, text)
 - `Subscription` — userId, plan, expiresAt, trialUsed
 - `User` → добавить `nameChangedAt`, `socials`, `streamings`, `cancelRate`
+
+**Уже добавлено** (после первой версии CLAUDE.md):
+- `Review` — `orderId, fromUserId, toUserId, stars (1..5), text?, createdAt`. Уникальный индекс `[orderId, fromUserId]` — один отзыв на сторону по заказу.
+- `User.ratingCount` — счётчик полученных отзывов. Обновляется агрегатом `avg(stars)` в `POST /orders/:id/review`.
 
 ---
 
@@ -100,7 +103,10 @@ Notification — userId, text, read
 | PATCH | /responses/:id | Принять / отклонить отклик (принятие → awaiting_date/today, остальные отклики авто-отклоняются) |
 | POST | /orders/:id/confirm | Двустороннее подтверждение выполнения → awaiting_rating |
 | POST | /orders/:id/cancel | Отмена заказа с причиной (любой не-терминальный статус) |
-| POST | /orders/:id/complete | Финал awaiting_rating → completed (демо-заглушка под отзывы) |
+| POST | /orders/:id/complete | Escape-hatch awaiting_rating → completed (обычно завершается автоматически вторым отзывом) |
+| POST | /orders/:id/review | Оставить отзыв (1..5 + текст ≤280). Когда обе стороны оставили — автоматический переход в completed |
+| GET | /orders/:id/my-review | Мой отзыв по заказу (204 если ещё нет) |
+| GET | /users/:id/reviews | Отзывы, полученные пользователем |
 | GET | /notifications | Список уведомлений |
 | PATCH | /notifications/read | Пометить прочитанными |
 
@@ -183,9 +189,9 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 
 ### 🟡 Важно (UX существенно страдает)
 
-| Фича | Описание |
-|---|---|
-| **Рейтинг и отзывы** | После завершения заказа: 1-5 звёзд + текст до 280 символов. Логика: 0-2 заказа = «Новый», 3-9 = минимум 3.0, 10+ = реальное среднее |
+| Фича | Статус | Описание |
+|---|---|---|
+| **Рейтинг и отзывы** | ✅ Готово | Модель `Review`, `POST /orders/:id/review`, `ReviewModal` после awaiting_rating. Когда обе стороны оставили отзыв → автоматический переход в completed. Пилюля «Новый» при <3 отзывов, clamp ≥3.0 при 3–9, среднее при 10+. Хелпер `formatRatingTier` в `app/src/api.ts`. |
 | **Отзыв отклика** | Можно отозвать пока статус «Ожидает ответа» |
 | **Заморозка заявки** | Редактирование заблокировано после первого отклика |
 | **1 активная заявка** | На каждый тип задачи у одного пользователя |

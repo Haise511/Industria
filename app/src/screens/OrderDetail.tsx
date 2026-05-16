@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { TopBar } from '../components/TopBar';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { CancelOrderModal } from '../components/CancelOrderModal';
-import { api, type ApiOrder, type OrderLifecycleStatus } from '../api';
+import { ReviewModal } from '../components/ReviewModal';
+import { api, formatRatingTier, type ApiOrder, type ApiReview, type OrderLifecycleStatus } from '../api';
 import { haptic } from '../telegram';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight2, Star1, Note, Location, Calendar, Verify, Lock1 } from 'iconsax-react';
@@ -45,6 +46,9 @@ export function OrderDetail() {
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  // null = ещё не загрузили / нет такого; ApiReview = пользователь уже оценил
+  const [myReview, setMyReview] = useState<ApiReview | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -54,6 +58,16 @@ export function OrderDetail() {
       .catch(() => nav(-1))
       .finally(() => setLoading(false));
   }, [id, nav]);
+
+  // Подгружаем мой отзыв по этому заказу — нужен, чтобы CTA показывал
+  // «Ожидает отзыв второй стороны» вместо «Оценить» после сабмита.
+  useEffect(() => {
+    if (!order) return;
+    if (order.status !== 'awaiting_rating') return;
+    api.getMyReviewForOrder(order.id)
+      .then(setMyReview)
+      .catch(() => setMyReview(null));
+  }, [order]);
 
   if (loading) {
     return (
@@ -107,17 +121,27 @@ export function OrderDetail() {
     }
   }
 
-  async function handleComplete() {
+  // Открывает форму отзыва. Сама отправка — в handleReviewSubmit. /complete
+  // больше не дёргается с фронта: переход awaiting_rating → completed
+  // случится автоматически, когда вторая сторона тоже оставит отзыв.
+  function handleOpenReview() {
     if (!order) return;
-    haptic('medium');
-    setActionLoading(true);
+    haptic('light');
+    setReviewOpen(true);
+  }
+
+  async function handleReviewSubmit(data: { stars: number; text?: string }) {
+    if (!order) return;
+    const review = await api.reviewOrder(order.id, data);
+    setMyReview(review);
+    setReviewOpen(false);
+    // После отзыва статус мог измениться (если оба отрецензировали → completed).
+    // Перезагрузим заказ, чтобы CTA-блок отразил новое состояние.
     try {
-      const updated = await api.completeOrder(order.id);
-      setOrder(updated);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setActionLoading(false);
+      const fresh = await api.getOrderById(String(order.id));
+      setOrder(fresh);
+    } catch {
+      // ignore — оставим локальное состояние как есть
     }
   }
 
@@ -153,11 +177,18 @@ export function OrderDetail() {
               )}
               <Chevron />
             </div>
-            {order.author.rating > 0 && (
-              <div className="detail-rating">
-                <Star /> {order.author.rating.toFixed(1)}
-              </div>
-            )}
+            {(() => {
+              const tier = formatRatingTier(order.author.rating, order.author.ratingCount ?? 0);
+              if (tier === null) {
+                // <3 отзывов — пилюля «Новый» вместо обманчивых 0.0.
+                return <div className="detail-rating detail-rating--new">Новый</div>;
+              }
+              return (
+                <div className="detail-rating">
+                  <Star /> {tier.toFixed(1)}
+                </div>
+              );
+            })()}
             <span className="detail-role muted">{role}</span>
           </div>
         </div>
@@ -234,10 +265,11 @@ export function OrderDetail() {
           lifecycle={lifecycle}
           isAuthor={isAuthor}
           myConfirmed={!!myConfirmed}
+          alreadyReviewed={!!myReview}
           actionLoading={actionLoading}
           onRespond={handleRespond}
           onConfirm={handleConfirm}
-          onComplete={handleComplete}
+          onReview={handleOpenReview}
           onCancel={() => { haptic('light'); setCancelOpen(true); }}
           onViewResponses={() => { haptic('light'); nav(`/orders/${order.id}/responses`); }}
         />
@@ -248,6 +280,12 @@ export function OrderDetail() {
         onClose={() => setCancelOpen(false)}
         onSubmit={handleCancelSubmit}
       />
+
+      <ReviewModal
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        onSubmit={handleReviewSubmit}
+      />
     </div>
   );
 }
@@ -256,10 +294,12 @@ interface CtaProps {
   lifecycle: OrderLifecycleStatus;
   isAuthor: boolean;
   myConfirmed: boolean;
+  /** Уже оставил отзыв по этому заказу — кнопка превращается в индикатор. */
+  alreadyReviewed: boolean;
   actionLoading: boolean;
   onRespond: () => void;
   onConfirm: () => void;
-  onComplete: () => void;
+  onReview: () => void;
   onCancel: () => void;
   onViewResponses: () => void;
 }
@@ -301,9 +341,13 @@ function CtaBlock(p: CtaProps) {
         )
       )}
       {p.lifecycle === 'awaiting_rating' && (
-        <PrimaryButton disabled={p.actionLoading} onClick={p.onComplete}>
-          Оценить
-        </PrimaryButton>
+        p.alreadyReviewed ? (
+          <PrimaryButton disabled>Ожидает отзыв второй стороны</PrimaryButton>
+        ) : (
+          <PrimaryButton disabled={p.actionLoading} onClick={p.onReview}>
+            Оценить
+          </PrimaryButton>
+        )
       )}
       <button type="button" className="detail-cancel-btn" onClick={p.onCancel}>
         Отменить заказ

@@ -22,7 +22,12 @@ export interface Order {
   description: string;
   authorName: string;
   authorRole: OrderRole;
+  /** Уже отформатированный рейтинг (с учётом порога "Новый"). Undefined,
+   *  если пользователь — «Новый» (см. authorIsNew). */
   authorRating?: number;
+  /** True, если у автора < 3 отзывов — показываем пилюлю «Новый»
+   *  вместо звезды с числом. */
+  authorIsNew?: boolean;
   authorAvatar?: string;
   status?: OrderStatus;
   lifecycle?: OrderLifecycle;
@@ -92,6 +97,9 @@ export function OrderCard({ order, onClick, showActions = false }: OrderCardProp
             <span className="ocard-rating">
               <Star1 size={14} color="#fbbe25" variant="Bold" /> {order.authorRating.toFixed(1)}
             </span>
+          )}
+          {order.authorIsNew && (
+            <span className="ocard-rating ocard-rating--new">Новый</span>
           )}
           <span className="ocard-role" style={{ color: tagColor }}>
             {ROLE_LABEL[order.authorRole]}

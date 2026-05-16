@@ -45,6 +45,12 @@ export const messages = {
   orderCancelled: (orderDesc: string, reason: string) =>
     `🚫 Заказ отменён.\n\nЗаявка: «${orderDesc.slice(0, 80)}...»\nПричина: ${reason}`,
 
+  reviewReceived: (stars: number, fromName: string, orderDesc: string) =>
+    `⭐ ${fromName} оставил отзыв (${stars}/5).\n\nЗаявка: «${orderDesc.slice(0, 80)}...»`,
+
+  awaitingYourReview: (orderDesc: string) =>
+    `📝 Не забудьте оставить отзыв.\n\nЗаявка: «${orderDesc.slice(0, 80)}...»`,
+
   subscriptionExpiresSoon: (days: number) =>
     `⏳ Подписка истекает через ${days} ${pluralDays(days)}.\n\nПродлите чтобы не потерять доступ к заявкам.`,
 

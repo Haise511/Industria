@@ -50,7 +50,7 @@ export default async function orderRoutes(app: FastifyInstance) {
         where,
         include: {
           author: {
-            select: { id: true, name: true, role: true, rating: true, avatarUrl: true, verified: true },
+            select: { id: true, name: true, role: true, rating: true, ratingCount: true, avatarUrl: true, verified: true },
           },
         },
         take: Number(query.limit ?? 50),
@@ -74,7 +74,7 @@ export default async function orderRoutes(app: FastifyInstance) {
       where: { id: Number(id) },
       include: {
         author: {
-          select: { id: true, name: true, role: true, rating: true, avatarUrl: true, verified: true },
+          select: { id: true, name: true, role: true, rating: true, ratingCount: true, avatarUrl: true, verified: true },
         },
         _count: { select: { responses: true } },
       },
@@ -163,7 +163,7 @@ export default async function orderRoutes(app: FastifyInstance) {
         order: {
           include: {
             author: {
-              select: { id: true, name: true, role: true, rating: true, avatarUrl: true, verified: true },
+              select: { id: true, name: true, role: true, rating: true, ratingCount: true, avatarUrl: true, verified: true },
             },
           },
         },
@@ -187,7 +187,7 @@ export default async function orderRoutes(app: FastifyInstance) {
       where: { orderId: Number(id) },
       include: {
         user: {
-          select: { id: true, name: true, role: true, rating: true, avatarUrl: true, verified: true },
+          select: { id: true, name: true, role: true, rating: true, ratingCount: true, avatarUrl: true, verified: true },
         },
       },
     })
@@ -346,7 +346,9 @@ export default async function orderRoutes(app: FastifyInstance) {
     return reply.send(updated)
   })
 
-  // Завершить заказ (переход awaiting_rating → completed). В демо вызывается из заглушки «Оценить».
+  // Завершить заказ (переход awaiting_rating → completed). Escape hatch на
+  // случай, если одна из сторон не оставит отзыв — обычно заказ завершается
+  // автоматически из POST /orders/:id/review, когда обе стороны отрецензировали.
   app.post('/orders/:id/complete', { onRequest: [app.authenticate] }, async (req, reply) => {
     const { userId } = req.user as { userId: number }
     const { id } = req.params as { id: string }
@@ -372,6 +374,132 @@ export default async function orderRoutes(app: FastifyInstance) {
     })
 
     return reply.send(updated)
+  })
+
+  // ─── Отзывы ────────────────────────────────────────────────────────────────
+
+  // Оставить отзыв по выполненному заказу. Доступно автору и исполнителю.
+  // Заказ должен быть в awaiting_rating. Когда обе стороны оставили отзыв —
+  // заказ автоматически переходит в completed.
+  app.post('/orders/:id/review', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+    const body = req.body as { stars?: number; text?: string }
+
+    const stars = Number(body.stars)
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+      return reply.status(400).send({ error: 'stars must be integer 1..5' })
+    }
+    const text = (body.text ?? '').trim()
+    if (text.length > 280) {
+      return reply.status(400).send({ error: 'text too long (280 max)' })
+    }
+
+    const order = await db.order.findUnique({
+      where: { id: Number(id) },
+      include: { responses: { where: { status: 'accepted' }, take: 1 } },
+    })
+    if (!order) return reply.status(404).send({ error: 'Not found' })
+
+    const executor = order.responses[0]
+    const isAuthor = order.authorId === userId
+    const isExecutor = executor?.userId === userId
+    if (!isAuthor && !isExecutor) return reply.status(403).send({ error: 'Forbidden' })
+
+    if (order.status !== 'awaiting_rating') {
+      return reply.status(409).send({ error: 'Order is not in awaiting_rating' })
+    }
+
+    const toUserId = isAuthor ? executor!.userId : order.authorId
+
+    // Проверяем, не оставлял ли пользователь уже отзыв (unique constraint
+    // дополнительно ловит гонки, но явная проверка даёт чистую 409).
+    const existing = await db.review.findUnique({
+      where: { orderId_fromUserId: { orderId: order.id, fromUserId: userId } },
+    })
+    if (existing) return reply.status(409).send({ error: 'Already reviewed' })
+
+    // Создаём отзыв, пересчитываем средний рейтинг адресата, и если это второй
+    // отзыв по заказу — переводим в completed. Всё в транзакции, чтобы не
+    // получить полузаписанное состояние.
+    const result = await db.$transaction(async (tx) => {
+      const review = await tx.review.create({
+        data: {
+          orderId: order.id,
+          fromUserId: userId,
+          toUserId,
+          stars,
+          text: text || null,
+        },
+      })
+
+      // Пересчёт среднего по живым отзывам: средний * count = старая сумма;
+      // новая сумма + stars / (count+1) = новое среднее. Делаем агрегатом —
+      // надёжнее против ошибок округления, дешевле чем тянуть все строки.
+      const agg = await tx.review.aggregate({
+        where: { toUserId },
+        _avg: { stars: true },
+        _count: true,
+      })
+      await tx.user.update({
+        where: { id: toUserId },
+        data: {
+          rating: agg._avg.stars ?? 0,
+          ratingCount: agg._count,
+        },
+      })
+
+      // Сколько отзывов по этому заказу? Если 2 — переводим в completed.
+      const reviewsForOrder = await tx.review.count({ where: { orderId: order.id } })
+      const orderAfter =
+        reviewsForOrder >= 2
+          ? await tx.order.update({
+              where: { id: order.id },
+              data: { status: 'completed' } as never,
+            })
+          : order
+
+      return { review, orderAfter, completed: reviewsForOrder >= 2 }
+    })
+
+    // Уведомляем адресата отзыва.
+    const fromUser = await db.user.findUnique({ where: { id: userId }, select: { name: true } })
+    if (fromUser) {
+      notify(toUserId, messages.reviewReceived(stars, fromUser.name, order.description)).catch(() => {})
+    }
+    // Если только первая сторона оставила — напомним второй.
+    if (!result.completed) {
+      notify(toUserId, messages.awaitingYourReview(order.description)).catch(() => {})
+    }
+
+    return reply.status(201).send(result.review)
+  })
+
+  // Отзывы, оставленные на конкретного пользователя.
+  app.get('/users/:id/reviews', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { id } = req.params as { id: string }
+    const reviews = await db.review.findMany({
+      where: { toUserId: Number(id) },
+      include: {
+        fromUser: { select: { id: true, name: true, role: true, avatarUrl: true } },
+        order: { select: { id: true, description: true, orderNumber: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    })
+    return reply.send(reviews)
+  })
+
+  // Отзыв текущего пользователя по конкретному заказу (для UI: показать форму
+  // или «вы уже оценили»). Возвращает 204 если не оставлял.
+  app.get('/orders/:id/my-review', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { userId } = req.user as { userId: number }
+    const { id } = req.params as { id: string }
+    const review = await db.review.findUnique({
+      where: { orderId_fromUserId: { orderId: Number(id), fromUserId: userId } },
+    })
+    if (!review) return reply.status(204).send()
+    return reply.send(review)
   })
 }
 

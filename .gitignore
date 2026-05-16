@@ -32,3 +32,13 @@ Thumbs.db
 
 # Vite cache
 .vite/
+
+# Local SQLite test DB (only used for ad-hoc localhost testing)
+server/prisma/dev.db
+server/prisma/dev.db-journal
+
+# Local-only seed script (creates test users + awaiting_rating order on SQLite)
+server/src/seed-local.ts
+
+# Local test revert checklist (per-session, not for commit)
+.LOCAL_TEST_REVERT.md

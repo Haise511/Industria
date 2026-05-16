@@ -51,6 +51,10 @@ model User {
   city       String?
   bio        String?
   avatarUrl  String?
+  // Rating is the running arithmetic mean of received Review.stars,
+  // updated in /orders/:id/review. ratingCount is the number of reviews
+  // that contributed. Display tier is derived (see toUserRating in api.ts):
+  //   <3 reviews -> "Новый",  3-9 -> max(rating, 3.0),  10+ -> rating.
   rating     Float    @default(0)
   ratingCount Int     @default(0)
   verified   Boolean  @default(false)
@@ -59,9 +63,11 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  orders        Order[]
-  responses     Response[]
-  notifications Notification[]
+  orders          Order[]
+  responses       Response[]
+  notifications   Notification[]
+  reviewsGiven    Review[]       @relation("ReviewsGiven")
+  reviewsReceived Review[]       @relation("ReviewsReceived")
 }
 
 model Order {
@@ -86,6 +92,7 @@ model Order {
   updatedAt   DateTime     @updatedAt
 
   responses Response[]
+  reviews   Review[]
 }
 
 model Response {
@@ -110,4 +117,21 @@ model Notification {
   text      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// Один отзыв на сторону по каждому заказу. Когда обе стороны оставили
+// отзыв, /orders/:id/review переводит заказ в completed.
+model Review {
+  id         Int      @id @default(autoincrement())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    Int
+  fromUser   User     @relation("ReviewsGiven", fields: [fromUserId], references: [id])
+  fromUserId Int
+  toUser     User     @relation("ReviewsReceived", fields: [toUserId], references: [id])
+  toUserId   Int
+  stars      Int      // 1..5, валидация на стороне эндпоинта
+  text       String?
+  createdAt  DateTime @default(now())
+
+  @@unique([orderId, fromUserId])
 }

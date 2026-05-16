@@ -135,6 +135,17 @@
   color: var(--text);
 }
 
+/* Пилюля «Новый» — для пользователей с <3 отзывов, чтобы не показывать
+   обманчивые 0.0 (см. formatRatingTier в api.ts). */
+.ocard-rating--new {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  background: rgba(117, 132, 243, 0.18);
+  color: var(--brand-soft);
+}
+
 /* Figma: 400/12/lh=15 (NOT 500). Role sits tight next to rating, NOT pushed right. */
 .ocard-role {
   font-size: 12px;
