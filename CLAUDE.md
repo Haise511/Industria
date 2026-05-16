@@ -77,13 +77,14 @@ Notification — userId, text, read
 
 **Предстоит расширить** (см. раздел «Roadmap»):
 - `Subscription` — userId, plan, expiresAt, trialUsed
-- `User` → добавить `socials`, `streamings`, `cancelRate`
+- `User` → добавить `cancelRate` (для верификации/деверификации)
 
 **Уже добавлено** (после первой версии CLAUDE.md):
 - `Review` — `orderId, fromUserId, toUserId, stars (1..5), text?, createdAt`. Уникальный индекс `[orderId, fromUserId]` — один отзыв на сторону по заказу.
 - `User.ratingCount` — счётчик полученных отзывов. Обновляется агрегатом `avg(stars)` в `POST /orders/:id/review`.
 - `Response.withdrawnAt` + `ResponseStatus.withdrawn` — исполнитель может отозвать свой отклик пока он `waiting` (`POST /responses/:id/withdraw`).
 - `User.nameChangedAt` — лимит на смену имени: не чаще раза в 30 дней (валидация в `PUT /profile`).
+- `User.socials`, `User.streamings`, `User.cases` — JSON-массивы `{label, url}`. Санитизация в `PUT /profile` (макс 20 элементов, http(s)/t.me только).
 
 ---
 
@@ -199,7 +200,7 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 | **Заморозка заявки** | ✅ Готово | `Order.editFrozen=true` при первом отклике. |
 | **1 активная заявка** | ✅ Готово | `POST /orders` отклоняет 409 `active_order_exists`, если у автора уже есть заявка того же `mode` в не-терминальном статусе. По одной активной заявке на `normal` и `toi`. |
 | **Имя раз в 30 дней** | ✅ Готово | `User.nameChangedAt` + валидация в `PUT /profile`: при смене имени проверяем, что прошло ≥30 дней, иначе 429 `name_change_throttled`. Апдейт того же имени не триггерит лимит. |
-| **Профиль расширенный** | Соцсети, стриминги, плейлисты, кейсы — опционально по роли |
+| **Профиль расширенный** | 🟡 Частично | Бэк: `User.socials/streamings/cases` (JSON arrays of `{label,url}`), санитайз и валидация в `PUT /profile`. Фронт: экран `/profile/edit` (`Личное.png`) с bio/городом/кейсами/именем + динамическая заполненность. Соцсети/стриминги — поля есть, UI добавим когда появится дизайн; публичный просмотр чужого профиля (`Профиль/Профиль.png`) — отдельной задачей. |
 | **Верификация** | Заявка → менеджер 72ч → оплата 50% → галочка. Отзыв при рейтинге < 3.5 / отменах > 20% / 3+ жалоб |
 
 ### 🟢 Следующий уровень

@@ -14,6 +14,8 @@ import {
 } from 'iconsax-react';
 import { TopBar } from '../components/TopBar';
 import { useAuth } from '../context/AuthContext';
+import { formatRatingTier, profileCompleteness } from '../api';
+import { haptic } from '../telegram';
 import avatarMainImg from '../assets/figma/avatar_main.png';
 import './Profile.css';
 
@@ -42,12 +44,19 @@ export function Profile() {
   const name = user?.name ?? '—';
   const role = user?.role ? ROLE_LABEL[user.role] : '—';
   const city = user?.city ?? null;
-  const rating = user?.rating ?? 0;
+  const ratingTier = formatRatingTier(user?.rating ?? 0, user?.ratingCount ?? 0);
   const avatar = user?.avatarUrl ?? null;
+  const completeness = profileCompleteness(user);
 
   const items: MenuItem[] = [
     { icon: <Card {...ICON} />, label: 'Подписка', hint: 'Активна до 15 мая 2026', hintColor: 'var(--success)', to: '/subscription' },
-    { icon: <Star1 {...ICON} />, label: 'Отзывы', hint: rating > 0 ? rating.toFixed(1) : '—', hintInline: true, to: '/reviews' },
+    {
+      icon: <Star1 {...ICON} />,
+      label: 'Отзывы',
+      hint: ratingTier !== null ? ratingTier.toFixed(1) : 'Новый',
+      hintInline: true,
+      to: '/reviews',
+    },
     { icon: <ShieldTick {...ICON} />, label: 'Заказать верификацию', to: '/verification' },
     { icon: <Refresh {...ICON} />, label: 'История заказов', to: '/history' },
     { icon: <Profile2User {...ICON} />, label: 'Услуги команды', to: '/team' },
@@ -61,7 +70,14 @@ export function Profile() {
     <div className="screen prof">
       <TopBar />
       <div className="prof-pad">
-        <div className="prof-card">
+        {/* Шапка профиля кликабельна — открывает экран редактирования
+            (design-refs/Личное.png). Это естественная точка входа: тап по
+            аватару/имени → перейти в редактирование. */}
+        <button
+          type="button"
+          className="prof-card prof-card--btn"
+          onClick={() => { haptic('light'); nav('/profile/edit'); }}
+        >
           <div className="prof-head">
             <div className="prof-ava">
               <img src={avatar ?? avatarMainImg} alt="" />
@@ -76,10 +92,10 @@ export function Profile() {
                     <span>{city}</span>
                   </span>
                 )}
-                {rating > 0 && (
+                {ratingTier !== null && (
                   <span className="prof-meta-rating">
                     <Star1 size={14} color="#fbbe25" variant="Bold" />
-                    <span>{rating.toFixed(1)}</span>
+                    <span>{ratingTier.toFixed(1)}</span>
                   </span>
                 )}
               </div>
@@ -88,13 +104,13 @@ export function Profile() {
           <div className="prof-progress">
             <div className="prof-progress-row">
               <span className="muted">Заполненность профиля</span>
-              <span>85%</span>
+              <span>{completeness}%</span>
             </div>
             <div className="prof-progress-track">
-              <div className="prof-progress-fill" style={{ width: '85%' }} />
+              <div className="prof-progress-fill" style={{ width: `${completeness}%` }} />
             </div>
           </div>
-        </div>
+        </button>
 
         <div className="prof-menu">
           {items.map((it) => (

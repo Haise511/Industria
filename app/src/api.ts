@@ -45,6 +45,12 @@ async function requestMaybe<T>(path: string, init: RequestInit = {}): Promise<T 
 
 export type UserRole = 'artist' | 'customer' | 'studio' | 'composer'
 
+/** Пункт расширенного профиля — соцсеть, стриминг или ссылка на кейс. */
+export interface ProfileLink {
+  label: string
+  url: string
+}
+
 export interface ApiUser {
   id: number
   telegramId: string
@@ -55,9 +61,13 @@ export interface ApiUser {
   bio: string | null
   avatarUrl: string | null
   rating: number
+  ratingCount?: number
   verified: boolean
   contract: boolean
   language: string
+  socials?: ProfileLink[]
+  streamings?: ProfileLink[]
+  cases?: ProfileLink[]
 }
 
 export type OrderLifecycleStatus =
@@ -139,6 +149,24 @@ export interface ApiReview {
     description: string
     orderNumber?: number
   }
+}
+
+/** Считает заполненность профиля как процент 0..100. Учитывает 7 слотов:
+ *  имя, город, био, аватар, и три массива ссылок (засчитываются за непустые).
+ *  Имя есть всегда (онбординг), так что минимум — 14%. */
+export function profileCompleteness(u: ApiUser | null | undefined): number {
+  if (!u) return 0
+  const slots = [
+    !!u.name,
+    !!u.city,
+    !!u.bio,
+    !!u.avatarUrl,
+    (u.socials?.length ?? 0) > 0,
+    (u.streamings?.length ?? 0) > 0,
+    (u.cases?.length ?? 0) > 0,
+  ]
+  const filled = slots.filter(Boolean).length
+  return Math.round((filled / slots.length) * 100)
 }
 
 /** Format the displayed rating per the CLAUDE.md tiered rules:
@@ -226,7 +254,7 @@ export const api = {
     return request<ApiUser>('/profile')
   },
 
-  updateProfile(data: Partial<Pick<ApiUser, 'name' | 'role' | 'city' | 'bio' | 'avatarUrl' | 'contract' | 'language'>>) {
+  updateProfile(data: Partial<Pick<ApiUser, 'name' | 'role' | 'city' | 'bio' | 'avatarUrl' | 'contract' | 'language' | 'socials' | 'streamings' | 'cases'>>) {
     return request<ApiUser>('/profile', {
       method: 'PUT',
       body: JSON.stringify(data),

@@ -65,6 +65,13 @@ model User {
   // Время последней смены имени. Используется для лимита: смена имени
   // доступна не чаще, чем раз в 30 дней (см. PUT /profile).
   nameChangedAt DateTime?
+  // Расширенный профиль — массивы { label, url }. JSON, потому что
+  // количество ссылок переменное и валидируется на стороне приложения.
+  // socials: соцсети (instagram/telegram/...), streamings: spotify/apple/...,
+  // cases: ссылки на портфолио/треки/выступления.
+  socials    Json     @default("[]")
+  streamings Json     @default("[]")
+  cases      Json     @default("[]")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

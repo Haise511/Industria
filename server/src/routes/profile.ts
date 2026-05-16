@@ -1,6 +1,31 @@
 import type { FastifyInstance } from 'fastify'
 import db from '../lib/db.js'
-import type { Role } from '@prisma/client'
+import type { Role, Prisma } from '@prisma/client'
+
+/** Описание одной ссылки в расширенном профиле. URL валидируется на стороне
+ *  приложения (не БД), чтобы клиент видел человеческое сообщение об ошибке. */
+interface ProfileLink {
+  label: string
+  url: string
+}
+
+/** Sanity-check: фронт может прислать массив, объект, что угодно. Берём только
+ *  валидные {label, url} (оба обязательны, url начинается с http(s):// или t.me).
+ *  Лимит 20 пунктов на список — защита от случайного спама. */
+function sanitizeLinks(input: unknown): ProfileLink[] {
+  if (!Array.isArray(input)) return []
+  const out: ProfileLink[] = []
+  for (const raw of input) {
+    if (!raw || typeof raw !== 'object') continue
+    const label = String((raw as { label?: unknown }).label ?? '').trim().slice(0, 64)
+    const url = String((raw as { url?: unknown }).url ?? '').trim().slice(0, 256)
+    if (!url) continue
+    if (!/^(https?:\/\/|t\.me\/)/i.test(url)) continue
+    out.push({ label: label || url, url })
+    if (out.length >= 20) break
+  }
+  return out
+}
 
 export default async function profileRoutes(app: FastifyInstance) {
   app.get('/profile', { onRequest: [app.authenticate] }, async (req, reply) => {
@@ -22,12 +47,25 @@ export default async function profileRoutes(app: FastifyInstance) {
       avatarUrl?: string
       contract?: boolean
       language?: string
+      socials?: unknown
+      streamings?: unknown
+      cases?: unknown
     }
 
     const allowed: (keyof typeof body)[] = ['name', 'role', 'city', 'bio', 'avatarUrl', 'contract', 'language']
     const data: Record<string, unknown> = Object.fromEntries(
       allowed.filter(k => body[k] !== undefined).map(k => [k, body[k]])
     )
+
+    // bio — лимит 280 (как в Field на фронте) + trim.
+    if (typeof data.bio === 'string') {
+      data.bio = (data.bio as string).trim().slice(0, 280)
+    }
+
+    // Расширенные ссылки — санитайз отдельно. undefined → не трогаем поле.
+    if (body.socials !== undefined) data.socials = sanitizeLinks(body.socials) as Prisma.JsonArray
+    if (body.streamings !== undefined) data.streamings = sanitizeLinks(body.streamings) as Prisma.JsonArray
+    if (body.cases !== undefined) data.cases = sanitizeLinks(body.cases) as Prisma.JsonArray
 
     // Лимит на смену имени: не чаще раза в 30 дней. Применяется только
     // когда новое имя реально отличается от текущего, чтобы PUT с

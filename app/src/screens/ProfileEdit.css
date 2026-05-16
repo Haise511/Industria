@@ -1,0 +1,158 @@
+/*
+ * Профиль — редактирование. design-refs/Личное.png.
+ *   - крупный круглый аватар по центру + brand-кружок с карандашом
+ *   - стек полей со стандартным .field-box (используем токены)
+ *   - кнопка «Сохранить» — primary, на всю ширину, под полями
+ */
+
+.pedit-pad {
+  padding: 8px 16px calc(var(--safe-bottom) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pedit-avatar-wrap {
+  position: relative;
+  align-self: center;
+  width: 110px;
+  height: 110px;
+  margin: 8px 0 4px;
+}
+
+.pedit-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #4d4d4d, #333);
+}
+.pedit-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Карандаш — кружок 32×32 в правом нижнем углу аватара, brand color. */
+.pedit-avatar-edit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  border: 3px solid var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.pedit-avatar-edit:active {
+  transform: scale(0.94);
+}
+
+.pedit-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pedit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pedit-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* «Добавить ещё +» — brand-soft текст-кнопка по центру под последним инпутом. */
+.pedit-add {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--brand-soft);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.pedit-add:active {
+  opacity: 0.7;
+}
+
+/* Select — переиспользует .field-box, но с chevron'ом справа. */
+.pedit-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text);
+}
+.pedit-select-control {
+  flex: 1;
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  outline: none;
+}
+.pedit-select-control option {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+/* Поле «только для чтения» (username) — серым, без курсора. */
+.pedit-readonly {
+  color: var(--text-quiet);
+  cursor: not-allowed;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.pedit-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 14px;
+  text-align: center;
+}
+
+.pedit-cta {
+  position: sticky;
+  bottom: 0;
+  padding-top: 8px;
+  background: linear-gradient(to top, var(--bg) 65%, rgba(29, 29, 29, 0));
+}
+
+.pedit-submit {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 96px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.12s ease;
+}
+.pedit-submit:active {
+  transform: scale(0.98);
+}
+.pedit-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

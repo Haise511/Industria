@@ -10,6 +10,7 @@ import { Confirm } from './screens/Confirm';
 import { CreateOrder } from './screens/CreateOrder';
 import { MyOrders, Responses, ActiveOrders } from './screens/Lists';
 import { Profile } from './screens/Profile';
+import { ProfileEdit } from './screens/ProfileEdit';
 import { Notifications } from './screens/Notifications';
 import { Filter } from './screens/Filter';
 import { History } from './screens/History';
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="/responses" element={<Responses />} />
         <Route path="/active" element={<ActiveOrders />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<ProfileEdit />} />
 
         {/* Respond flow */}
         <Route path="/respond/date" element={<DatePicker />} />

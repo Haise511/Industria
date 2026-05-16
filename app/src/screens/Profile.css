@@ -34,6 +34,21 @@
   gap: 16px;
 }
 
+/* Кнопка-обёртка над .prof-card — обнуляет стили button, чтобы карточка
+   осталась визуально такой же, но стала тапабельной (вход в /profile/edit). */
+.prof-card--btn {
+  width: 100%;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+.prof-card--btn:active {
+  opacity: 0.85;
+}
+
 .prof-head {
   display: flex;
   align-items: center;
