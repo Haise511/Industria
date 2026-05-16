@@ -134,6 +134,15 @@
   gap: 10px;
 }
 
+/* Шапка автора кликабельна на чужой заявке — лёгкий курсор + active fade. */
+.detail-author--btn {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.detail-author--btn:active {
+  opacity: 0.7;
+}
+
 .detail-cancel-btn {
   background: transparent;
   color: #ff5356;

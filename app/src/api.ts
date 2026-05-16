@@ -51,6 +51,23 @@ export interface ProfileLink {
   url: string
 }
 
+/** Публичный subset профиля чужого пользователя (без telegramId/contract и пр.). */
+export interface ApiPublicUser {
+  id: number
+  name: string
+  username: string | null
+  role: UserRole
+  city: string | null
+  bio: string | null
+  avatarUrl: string | null
+  rating: number
+  ratingCount?: number
+  verified: boolean
+  socials?: ProfileLink[]
+  streamings?: ProfileLink[]
+  cases?: ProfileLink[]
+}
+
 export interface ApiUser {
   id: number
   telegramId: string
@@ -341,6 +358,11 @@ export const api = {
 
   getUserReviews(userId: number) {
     return request<ApiReview[]>(`/users/${userId}/reviews`)
+  },
+
+  // Публичный профиль другого пользователя (без приватных полей).
+  getUser(userId: number) {
+    return request<ApiPublicUser>(`/users/${userId}`)
   },
 
   getNotifications() {

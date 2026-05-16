@@ -37,6 +37,33 @@ export default async function profileRoutes(app: FastifyInstance) {
     return reply.send({ ...user, telegramId: user.telegramId.toString() })
   })
 
+  // Публичный профиль другого пользователя. Возвращает безопасный subset:
+  // никаких telegramId/language/contract — только то, что показываем в
+  // дизайне публичного просмотра (design-refs/Профиль/Профиль.png).
+  app.get('/users/:id', { onRequest: [app.authenticate] }, async (req, reply) => {
+    const { id } = req.params as { id: string }
+    const user = await db.user.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        role: true,
+        city: true,
+        bio: true,
+        avatarUrl: true,
+        rating: true,
+        ratingCount: true,
+        verified: true,
+        socials: true,
+        streamings: true,
+        cases: true,
+      },
+    })
+    if (!user) return reply.status(404).send({ error: 'User not found' })
+    return reply.send(user)
+  })
+
   app.put('/profile', { onRequest: [app.authenticate] }, async (req, reply) => {
     const { userId } = req.user as { userId: number }
     const body = req.body as {

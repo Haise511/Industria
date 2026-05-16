@@ -1,0 +1,41 @@
+/* Карточка отзыва. По дизайну — фон surface-1, радиус 16, padding 16,
+   внутренний gap 12. Звёзды чуть крупнее (20) чтобы читались сразу. */
+
+.rcard {
+  background: var(--surface-1);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rcard-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rcard-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--text-soft);
+}
+
+.rcard-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-quiet);
+}
+
+.rcard-from {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.rcard-date {
+  margin-left: auto;
+}

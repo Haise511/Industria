@@ -194,7 +194,19 @@ export function OrderDetail() {
     <div className="screen detail">
       <TopBar />
       <div className="detail-pad">
-        <div className="detail-author">
+        {/* Шапка автора — кликабельна, ведёт на его публичный профиль
+            (/users/:id). Не для автора своей же заявки: ему туда идти
+            смысла нет, и в макете на собственной странице это не показано. */}
+        <div
+          className={`detail-author ${isAuthor ? '' : 'detail-author--btn'}`}
+          role={isAuthor ? undefined : 'button'}
+          tabIndex={isAuthor ? undefined : 0}
+          onClick={() => {
+            if (isAuthor) return;
+            haptic('light');
+            nav(`/users/${order.author.id}`);
+          }}
+        >
           <div className="detail-avatar">
             {order.author.avatarUrl
               ? <img src={order.author.avatarUrl} alt="" />
@@ -206,7 +218,7 @@ export function OrderDetail() {
               {order.author.verified && (
                 <Verify size={16} color="#3B9CFD" variant="Bold" />
               )}
-              <Chevron />
+              {!isAuthor && <Chevron />}
             </div>
             {(() => {
               const tier = formatRatingTier(order.author.rating, order.author.ratingCount ?? 0);
