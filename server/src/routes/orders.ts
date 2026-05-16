@@ -84,7 +84,11 @@ export default async function orderRoutes(app: FastifyInstance) {
     return reply.send(order)
   })
 
-  // Создать заявку
+  // Создать заявку. Ограничение: у одного пользователя не может быть двух
+  // активных заявок одного и того же режима. Терминальные статусы
+  // (completed/cancelled/closed) не считаются. Это даёт по одной заявке на
+  // «обычный» и «тойский» режим — авторы не плодят дубликаты, исполнители
+  // видят аккуратную ленту.
   app.post('/orders', { onRequest: [app.authenticate] }, async (req, reply) => {
     const { userId } = req.user as { userId: number }
     const body = req.body as {
@@ -100,6 +104,23 @@ export default async function orderRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'price and description required' })
     }
 
+    const mode = body.mode ?? 'normal'
+    const existingActive = await db.order.findFirst({
+      where: {
+        authorId: userId,
+        mode,
+        status: { notIn: ['completed', 'cancelled', 'closed'] },
+      },
+      select: { id: true, orderNumber: true },
+    })
+    if (existingActive) {
+      return reply.status(409).send({
+        error: 'active_order_exists',
+        message: `У вас уже есть активная заявка #${existingActive.orderNumber} (${mode === 'toi' ? 'тойский' : 'обычный'} режим). Завершите или отмените её перед созданием новой.`,
+        existingOrderId: existingActive.id,
+      })
+    }
+
     const order = await db.order.create({
       data: {
         authorId: userId,
@@ -108,7 +129,7 @@ export default async function orderRoutes(app: FastifyInstance) {
         city: body.city,
         date: body.date,
         contract: body.contract ?? 'cash',
-        mode: body.mode ?? 'normal',
+        mode,
       },
     })
 

@@ -77,12 +77,13 @@ Notification — userId, text, read
 
 **Предстоит расширить** (см. раздел «Roadmap»):
 - `Subscription` — userId, plan, expiresAt, trialUsed
-- `User` → добавить `nameChangedAt`, `socials`, `streamings`, `cancelRate`
+- `User` → добавить `socials`, `streamings`, `cancelRate`
 
 **Уже добавлено** (после первой версии CLAUDE.md):
 - `Review` — `orderId, fromUserId, toUserId, stars (1..5), text?, createdAt`. Уникальный индекс `[orderId, fromUserId]` — один отзыв на сторону по заказу.
 - `User.ratingCount` — счётчик полученных отзывов. Обновляется агрегатом `avg(stars)` в `POST /orders/:id/review`.
 - `Response.withdrawnAt` + `ResponseStatus.withdrawn` — исполнитель может отозвать свой отклик пока он `waiting` (`POST /responses/:id/withdraw`).
+- `User.nameChangedAt` — лимит на смену имени: не чаще раза в 30 дней (валидация в `PUT /profile`).
 
 ---
 
@@ -195,9 +196,9 @@ VITE_API_URL = https://industria-production-83f3.up.railway.app
 |---|---|---|
 | **Рейтинг и отзывы** | ✅ Готово | Модель `Review`, `POST /orders/:id/review`, `ReviewModal` после awaiting_rating. Когда обе стороны оставили отзыв → автоматический переход в completed. Пилюля «Новый» при <3 отзывов, clamp ≥3.0 при 3–9, среднее при 10+. Хелпер `formatRatingTier` в `app/src/api.ts`. |
 | **Отзыв отклика** | ✅ Готово | `ResponseStatus.withdrawn` + `Response.withdrawnAt`. `POST /responses/:id/withdraw` — доступно только владельцу пока `waiting`. На /responses карточки кликабельны; на OrderDetail при `lifecycle=open` и `myResponse.status=waiting` — кнопка «Отозвать» (тёмная пилюля #3d3d42 по Figma node 1:9008). Отозванные не показываются в `GET /responses` и `GET /orders/:id/responses`. |
-| **Заморозка заявки** | Редактирование заблокировано после первого отклика |
-| **1 активная заявка** | На каждый тип задачи у одного пользователя |
-| **Имя раз в 30 дней** | Ограничение на смену имени |
+| **Заморозка заявки** | ✅ Готово | `Order.editFrozen=true` при первом отклике. |
+| **1 активная заявка** | ✅ Готово | `POST /orders` отклоняет 409 `active_order_exists`, если у автора уже есть заявка того же `mode` в не-терминальном статусе. По одной активной заявке на `normal` и `toi`. |
+| **Имя раз в 30 дней** | ✅ Готово | `User.nameChangedAt` + валидация в `PUT /profile`: при смене имени проверяем, что прошло ≥30 дней, иначе 429 `name_change_throttled`. Апдейт того же имени не триггерит лимит. |
 | **Профиль расширенный** | Соцсети, стриминги, плейлисты, кейсы — опционально по роли |
 | **Верификация** | Заявка → менеджер 72ч → оплата 50% → галочка. Отзыв при рейтинге < 3.5 / отменах > 20% / 3+ жалоб |
 

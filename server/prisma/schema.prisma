@@ -62,6 +62,9 @@ model User {
   verified   Boolean  @default(false)
   contract   Boolean  @default(false)
   language   String   @default("ru")
+  // Время последней смены имени. Используется для лимита: смена имени
+  // доступна не чаще, чем раз в 30 дней (см. PUT /profile).
+  nameChangedAt DateTime?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
