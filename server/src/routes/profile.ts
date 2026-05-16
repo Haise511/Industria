@@ -9,6 +9,32 @@ interface ProfileLink {
   url: string
 }
 
+/** Нормализует ссылочные поля при отдаче из БД. Под Postgres Json приходит
+ *  массивом, под SQLite — строкой (см. .LOCAL_TEST_REVERT.md). Универсальный
+ *  парсер, чтобы фронт всегда получал массив. */
+function parseLinks(value: unknown): ProfileLink[] {
+  if (Array.isArray(value)) return value as ProfileLink[]
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+/** Раскрывает socials/streamings/cases в массивы перед отдачей наружу. */
+function normalizeLinks<T extends { socials?: unknown; streamings?: unknown; cases?: unknown }>(u: T): T {
+  return {
+    ...u,
+    socials: parseLinks(u.socials),
+    streamings: parseLinks(u.streamings),
+    cases: parseLinks(u.cases),
+  }
+}
+
 /** Sanity-check: фронт может прислать массив, объект, что угодно. Берём только
  *  валидные {label, url} (оба обязательны, url начинается с http(s):// или t.me).
  *  Лимит 20 пунктов на список — защита от случайного спама. */
@@ -34,7 +60,7 @@ export default async function profileRoutes(app: FastifyInstance) {
     const user = await db.user.findUnique({ where: { id: userId } })
     if (!user) return reply.status(404).send({ error: 'User not found' })
 
-    return reply.send({ ...user, telegramId: user.telegramId.toString() })
+    return reply.send(normalizeLinks({ ...user, telegramId: user.telegramId.toString() }))
   })
 
   // Публичный профиль другого пользователя. Возвращает безопасный subset:
@@ -61,7 +87,7 @@ export default async function profileRoutes(app: FastifyInstance) {
       },
     })
     if (!user) return reply.status(404).send({ error: 'User not found' })
-    return reply.send(user)
+    return reply.send(normalizeLinks(user))
   })
 
   app.put('/profile', { onRequest: [app.authenticate] }, async (req, reply) => {
@@ -122,6 +148,6 @@ export default async function profileRoutes(app: FastifyInstance) {
     }
 
     const user = await db.user.update({ where: { id: userId }, data })
-    return reply.send({ ...user, telegramId: user.telegramId.toString() })
+    return reply.send(normalizeLinks({ ...user, telegramId: user.telegramId.toString() }))
   })
 }

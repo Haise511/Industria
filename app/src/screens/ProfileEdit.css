@@ -67,10 +67,54 @@
   gap: 8px;
 }
 
+/* «О себе» — высота управляется JS-ом из ProfileEdit.tsx (auto-resize
+   до 180px). resize:none убирает грейфер у уголка. overflow-y:auto даёт
+   скролл, когда контент перевалил за лимит. */
+.pedit-bio-box {
+  align-items: stretch;
+}
+.pedit-bio {
+  resize: none;
+  overflow-y: auto;
+  min-height: 44px;
+  max-height: 180px;
+  padding-right: 48px; /* место под .field-counter в правом нижнем углу */
+}
+
 .pedit-cases {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Ряд с инпутом + крестиком удаления. Крестик выходит за правый край
+   на 4px чтобы визуально сидеть «снаружи» поля, как обычный close-control. */
+.pedit-case-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pedit-case-input {
+  flex: 1;
+  min-width: 0;
+}
+.pedit-case-remove {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  color: var(--text-quiet);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, transform 0.12s ease;
+}
+.pedit-case-remove:hover {
+  color: var(--danger);
+}
+.pedit-case-remove:active {
+  transform: scale(0.9);
 }
 
 /* «Добавить ещё +» — brand-soft текст-кнопка по центру под последним инпутом. */

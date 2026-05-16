@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowDown2, Edit2, Add } from 'iconsax-react';
+import { ArrowDown2, Edit2, Add, CloseCircle } from 'iconsax-react';
 import { TopBar } from '../components/TopBar';
-import { TextArea, TextInput } from '../components/Field';
+import { TextInput } from '../components/Field';
 import { api, type ProfileLink } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { KG_CITIES } from '../constants/cities';
@@ -11,6 +11,8 @@ import avatarMainImg from '../assets/figma/avatar_main.png';
 import './ProfileEdit.css';
 
 const BIO_MAX = 280;
+/** Максимальная высота автоувеличивающегося textarea «О себе» (px). */
+const BIO_MAX_HEIGHT = 180;
 
 /**
  * Экран редактирования профиля — соответствует design-refs/Личное.png.
@@ -65,6 +67,23 @@ export function ProfileEdit() {
     setCases([...caseRows, { label: '', url: '' }]);
   }
 
+  function removeCase(i: number) {
+    if (caseRows.length <= 1) return;
+    haptic('light');
+    const next = caseRows.filter((_, j) => j !== i);
+    setCases(next);
+  }
+
+  // «О себе» — авто-увеличение по содержимому до BIO_MAX_HEIGHT, дальше скролл.
+  // useLayoutEffect нужен, чтобы пересчитать высоту до пейнта (нет «прыжка»).
+  const bioRef = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = bioRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, BIO_MAX_HEIGHT)}px`;
+  }, [bio]);
+
   async function handleSave() {
     if (!user) return;
     haptic('medium');
@@ -104,12 +123,15 @@ export function ProfileEdit() {
 
         <div className="pedit-stack">
           <Section label="О себе">
-            <div className="field-box">
-              <TextArea
+            <div className="field-box pedit-bio-box">
+              <textarea
+                ref={bioRef}
+                className="field-textarea pedit-bio"
                 placeholder="Расскажите о своём опыте, стиле, оборудовании"
                 value={bio}
                 onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
                 maxLength={BIO_MAX}
+                rows={2}
               />
               <span className="field-counter">{bio.length}/{BIO_MAX}</span>
             </div>
@@ -118,12 +140,26 @@ export function ProfileEdit() {
           <Section label="Ссылка на кейсы">
             <div className="pedit-cases">
               {caseRows.map((c, i) => (
-                <div className="field-box" key={i}>
-                  <TextInput
-                    placeholder="https://webogram.org/a/"
-                    value={c.url}
-                    onChange={(e) => updateCase(i, { url: e.target.value })}
-                  />
+                <div className="pedit-case-row" key={i}>
+                  <div className="field-box pedit-case-input">
+                    <TextInput
+                      placeholder="https://webogram.org/a/"
+                      value={c.url}
+                      onChange={(e) => updateCase(i, { url: e.target.value })}
+                    />
+                  </div>
+                  {/* Крестик удаления — виден только если кейсов больше одного.
+                      Минимум один остаётся, чтобы был куда вводить ссылку. */}
+                  {caseRows.length > 1 && (
+                    <button
+                      type="button"
+                      className="pedit-case-remove"
+                      onClick={() => removeCase(i)}
+                      aria-label="Удалить кейс"
+                    >
+                      <CloseCircle size={22} color="currentColor" variant="Bold" />
+                    </button>
+                  )}
                 </div>
               ))}
               <button type="button" className="pedit-add" onClick={addCase}>

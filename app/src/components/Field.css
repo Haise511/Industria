@@ -25,10 +25,14 @@
 .field-input,
 .field-textarea {
   width: 100%;
+  /* Явно фиксируем Fixel Display 400/16 — некоторые движки (особенно
+     Telegram WebView на Android) сбрасывают наследование шрифта на
+     системный для нативных контролов. */
+  font-family: var(--font);
   font-size: 16px;
   line-height: 22px;
+  font-weight: 400;
   color: var(--text);
-  font-weight: 500;
 }
 
 .field-textarea {
