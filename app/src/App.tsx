@@ -59,7 +59,10 @@ export default function App() {
     return () => tg.BackButton.offClick(handler);
   }, [loc.pathname, nav]);
 
-  const showTabs = TAB_PATHS.some((p) => loc.pathname.startsWith(p));
+  // Таб-бар показываем ТОЛЬКО на корневых табах. startsWith ловил детальные
+  // экраны (/feed/:id, /profile/edit и т.д.) — там нужен полноэкранный
+  // контент с собственной CTA внизу, без плавающей панели.
+  const showTabs = TAB_PATHS.includes(loc.pathname);
   const sheetBg = SHEET_BG[loc.pathname];
 
   return (
